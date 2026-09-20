@@ -1,0 +1,15 @@
+[versions]
+agp = "9.1.0"
+ezxhelper = "3.2.0-preview1"
+libxposed-api = "101.0.0"
+dexkit = "2.0.0"
+
+[libraries]
+libxposed-api = { module = "io.github.libxposed:api", version.ref = "libxposed-api" }
+ezxhelper-android-utils = { module = "io.github.kyuubiran.ezxhelper:android-utils", version.ref = "ezxhelper" }
+ezxhelper-core = { module = "io.github.kyuubiran.ezxhelper:core", version.ref = "ezxhelper" }
+ezxhelper-xposed-api = { module = "io.github.kyuubiran.ezxhelper:xposed-api-101", version.ref = "ezxhelper" }
+dexkit = { module = "org.luckypray:dexkit", version.ref = "dexkit" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
