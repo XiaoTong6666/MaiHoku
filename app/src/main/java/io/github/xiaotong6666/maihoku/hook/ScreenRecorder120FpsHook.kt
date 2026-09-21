@@ -2,22 +2,17 @@ package io.github.xiaotong6666.maihoku.hook
 
 import android.app.Application
 import android.content.Context
-import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
 import android.view.Display
 import android.view.WindowManager
 import io.github.kyuubiran.ezxhelper.core.finder.MethodFinder
-import io.github.kyuubiran.ezxhelper.xposed.dsl.HookFactory.`-Static`.createHook
-import org.luckypray.dexkit.DexKitBridge
-import java.io.File
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 
 object ScreenRecorder120FpsHook : BaseHook() {
     override val name: String = "ScreenRecorder120FpsHook"
 
-    private const val MODULE_PACKAGE = "io.github.xiaotong6666.maihoku"
     private const val TARGET_FPS = "120"
     private const val TARGET_LABEL = "120fps"
     private val knownFrameValues = setOf("15", "24", "30", "48", "60", "90", TARGET_FPS)
@@ -30,20 +25,18 @@ object ScreenRecorder120FpsHook : BaseHook() {
     @Volatile
     private var bootstrapped = false
 
-    @Volatile
-    private var dexKitLoaded = false
-
-    override fun init() {
-        MethodFinder.fromClass(Application::class)
+    override fun init(runtime: HookRuntime) {
+        val attach = MethodFinder.fromClass(Application::class)
             .filterByName("attach")
             .filterByParamTypes(Context::class.java)
             .first()
-            .createHook {
-                after { param ->
-                    val context = param.arg(0) as? Context ?: return@after
-                    bootstrap(context)
-                }
+
+        runtime.hooks.method(attach, "screenrecorder.application.attach") {
+            after {
+                val context = arg(0) as? Context ?: return@after
+                bootstrap(runtime, context)
             }
+        }
     }
 
     private fun supports120Fps(context: Context): Boolean {
@@ -64,20 +57,18 @@ object ScreenRecorder120FpsHook : BaseHook() {
     }
 
     @Synchronized
-    private fun bootstrap(context: Context) {
+    private fun bootstrap(runtime: HookRuntime, context: Context) {
         if (bootstrapped) return
-        ensureDexKitLoaded(context)
 
         val classLoader = context.classLoader ?: return
-        val apkPath = context.applicationInfo?.sourceDir ?: return
-        val resolved = resolveTarget(apkPath, classLoader) ?: run {
+        val resolved = resolveTarget(runtime, classLoader) ?: run {
             Log.e(name, "Unable to resolve screen recorder frame config class with DexKit")
             return
         }
 
-        resolved.initMethod.createHook {
-            after { param ->
-                val targetContext = param.arg(0) as? Context ?: context
+        runtime.hooks.method(resolved.initMethod, "screenrecorder.config.init") {
+            after {
+                val targetContext = arg(0) as? Context ?: context
                 if (!supports120Fps(targetContext)) return@after
                 enable120FpsOption(resolved.configClass)
             }
@@ -86,39 +77,8 @@ object ScreenRecorder120FpsHook : BaseHook() {
         Log.i(name, "Hooked ${resolved.configClass.name}.${resolved.initMethod.name}(Context) via DexKit")
     }
 
-    @Synchronized
-    private fun ensureDexKitLoaded(context: Context) {
-        if (dexKitLoaded) return
-
-        val nativeLibraryDir = try {
-            context.packageManager
-                .getApplicationInfo(MODULE_PACKAGE, PackageManager.ApplicationInfoFlags.of(0))
-                .nativeLibraryDir
-        } catch (_: Throwable) {
-            try {
-                @Suppress("DEPRECATION")
-                context.packageManager.getApplicationInfo(MODULE_PACKAGE, 0).nativeLibraryDir
-            } catch (_: Throwable) {
-                null
-            }
-        }
-        if (!nativeLibraryDir.isNullOrBlank()) {
-            val libraryFile = File(nativeLibraryDir, "libdexkit.so")
-            if (libraryFile.exists()) {
-                System.load(libraryFile.absolutePath)
-                dexKitLoaded = true
-                Log.i(name, "Loaded DexKit from ${libraryFile.absolutePath}")
-                return
-            }
-        }
-
-        System.loadLibrary("dexkit")
-        dexKitLoaded = true
-        Log.i(name, "Loaded DexKit via System.loadLibrary")
-    }
-
-    private fun resolveTarget(apkPath: String, classLoader: ClassLoader): ResolvedTarget? {
-        DexKitBridge.create(apkPath).use { bridge ->
+    private fun resolveTarget(runtime: HookRuntime, classLoader: ClassLoader): ResolvedTarget? {
+        return runtime.dexKit.useBridge { bridge ->
             val classData = bridge.findClass {
                 matcher {
                     fields {
@@ -144,7 +104,7 @@ object ScreenRecorder120FpsHook : BaseHook() {
                     }
                     usingStrings("ScreenRecorderConfig", "defaultFrames")
                 }
-            }.firstOrNull() ?: return null
+            }.firstOrNull() ?: return@useBridge null
 
             val configClass = classData.getInstance(classLoader)
             val initMethod = classData.findMethod {
@@ -158,9 +118,9 @@ object ScreenRecorder120FpsHook : BaseHook() {
                     it.returnType == Void.TYPE &&
                         it.parameterTypes.contentEquals(arrayOf(Context::class.java))
                 }
-                ?: return null
+                ?: return@useBridge null
 
-            return ResolvedTarget(configClass, initMethod.apply { isAccessible = true })
+            ResolvedTarget(configClass, initMethod.apply { isAccessible = true })
         }
     }
 

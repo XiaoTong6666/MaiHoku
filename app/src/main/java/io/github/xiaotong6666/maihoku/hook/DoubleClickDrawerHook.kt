@@ -4,12 +4,8 @@ import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
-import io.github.kyuubiran.ezxhelper.core.ClassLoaderProvider
 import io.github.kyuubiran.ezxhelper.core.finder.MethodFinder
-import io.github.kyuubiran.ezxhelper.xposed.EzXposed
-import io.github.kyuubiran.ezxhelper.xposed.dsl.HookFactory.`-Static`.createHook
 import io.github.xiaotong6666.maihoku.TERMUX_PACKAGE
-import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.query.FindMethod
 import org.luckypray.dexkit.query.matchers.MethodMatcher
 import java.lang.reflect.Method
@@ -26,16 +22,16 @@ object DoubleClickDrawerHook : BaseHook() {
     @Volatile
     private var lastDownTime: Long = 0
 
-    override fun init() {
-        val onTouchEvent = findTerminalOnTouchEvent()
+    override fun init(runtime: HookRuntime) {
+        val onTouchEvent = findTerminalOnTouchEvent(runtime)
         if (onTouchEvent == null) {
             Log.e(TAG, "TerminalView.onTouchEvent not found, abort")
             return
         }
 
-        onTouchEvent.createHook {
-            before { param ->
-                val event = param.arg(0) as? MotionEvent ?: return@before
+        runtime.hooks.method(onTouchEvent, "termux.terminal.double_click_drawer") {
+            before {
+                val event = arg(0) as? MotionEvent ?: return@before
                 if (event.actionMasked != MotionEvent.ACTION_DOWN) return@before
 
                 val now = System.currentTimeMillis()
@@ -45,7 +41,7 @@ object DoubleClickDrawerHook : BaseHook() {
                 if (previous == 0L || now - previous >= DOUBLE_CLICK_TIMEOUT_MS) return@before
                 if (event.x > LEFT_EDGE_PX) return@before
 
-                val terminalView = param.thisObjectOrNull as? View ?: return@before
+                val terminalView = thisObject as? View ?: return@before
                 openLeftDrawer(terminalView)
             }
         }
@@ -54,7 +50,7 @@ object DoubleClickDrawerHook : BaseHook() {
     }
 
     /** Use the exact Termux method first; DexKit is only a lookup fallback. */
-    private fun findTerminalOnTouchEvent(): Method? {
+    private fun findTerminalOnTouchEvent(runtime: HookRuntime): Method? {
         val direct = try {
             MethodFinder.fromClass(TARGET_TERMINAL_VIEW)
                 .filterByName("onTouchEvent")
@@ -67,9 +63,7 @@ object DoubleClickDrawerHook : BaseHook() {
         if (direct != null) return direct
 
         return try {
-            val apkPath = EzXposed.appContext.packageManager
-                .getApplicationInfo(TERMUX_PACKAGE, 0).sourceDir
-            DexKitBridge.create(apkPath)?.use { dexkit ->
+            runtime.dexKit.useBridge { dexkit ->
                 dexkit.findMethod(
                     FindMethod.create().matcher(
                         MethodMatcher.create().apply {
@@ -80,7 +74,7 @@ object DoubleClickDrawerHook : BaseHook() {
                 )
                     .mapNotNull { data ->
                         try {
-                            data.getMethodInstance(ClassLoaderProvider.safeClassLoader)
+                            data.getMethodInstance(runtime.classLoader)
                         } catch (_: Throwable) {
                             null
                         }
