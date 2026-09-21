@@ -9,6 +9,7 @@ internal data class TelegramConfig(
     val smsProfileEnabled: Boolean,
     val mutualContactEnabled: Boolean,
     val profileIdentityEnabled: Boolean,
+    val sourceFreeForwardEnabled: Boolean,
 ) {
     val hasValidIdentity: Boolean
         get() = identityEnabled && apiId > 0 && apiHash.isNotBlank()
@@ -33,6 +34,10 @@ internal data class TelegramConfig(
                 profileIdentityEnabled = prefs?.getBoolean(
                     "ui.profile_identity_enabled",
                     prefs.getBoolean("ui.user_card_dc_enabled", true),
+                ) ?: true,
+                sourceFreeForwardEnabled = prefs?.getBoolean(
+                    "forward.source_free_enabled",
+                    true,
                 ) ?: true,
             )
         }

@@ -13,6 +13,7 @@ object TelegramHook : BaseHook() {
         SmsFeeBillingFeature,
         MutualContactFeature,
         ProfileIdentityFeature,
+        SourceFreeForwardFeature,
         IdentityAuditFeature,
     )
 
