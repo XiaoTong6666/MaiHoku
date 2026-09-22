@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.spotless)
 }
 
 fun runGitCommand(vararg args: String): String? =
@@ -18,3 +19,33 @@ val gitCommitCount = runGitCommand("git", "rev-list", "--count", "HEAD")?.toIntO
 
 extra["gitCommitId"] = gitCommitId
 extra["gitCommitCount"] = gitCommitCount
+
+spotless {
+    lineEndings = com.diffplug.spotless.LineEnding.UNIX
+
+    java {
+        target("**/src/*/java/**/*.java")
+        targetExclude("**/build/**")
+
+        palantirJavaFormat()
+        importOrder()
+        removeUnusedImports()
+        formatAnnotations()
+    }
+
+    kotlin {
+        target("**/src/*/kotlin/**/*.kt", "**/src/*/java/**/*.kt")
+        targetExclude("**/build/**")
+        ktlint().editorConfigOverride(
+            mapOf(
+                "ktlint_standard_max-line-length" to "disabled",
+            ),
+        )
+    }
+}
+
+tasks.register("format") {
+    dependsOn("spotlessApply")
+    group = "formatting"
+    description = "Formats the code using Spotless"
+}

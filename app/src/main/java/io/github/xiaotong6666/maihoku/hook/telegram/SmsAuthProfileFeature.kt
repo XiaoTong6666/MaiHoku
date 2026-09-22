@@ -16,8 +16,7 @@ internal data class SmsAuthProfileSymbols(
 internal object SmsAuthProfileFeature : TelegramFeature<SmsAuthProfileSymbols>() {
     override val id: String = "telegram.sms.auth_profile"
 
-    override fun isEnabled(runtime: TelegramRuntime): Boolean =
-        runtime.config.smsProfileEnabled
+    override fun isEnabled(runtime: TelegramRuntime): Boolean = runtime.config.smsProfileEnabled
 
     override fun resolve(runtime: TelegramRuntime): SmsAuthProfileSymbols {
         val buildVars = StableSymbols.resolveBuildVars(runtime)

@@ -10,12 +10,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
+import io.github.xiaotong6666.maihoku.R
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 import java.util.Collections
-import java.util.Locale
 import java.util.WeakHashMap
 
 internal data class SourceFreeForwardSymbols(
@@ -50,6 +50,8 @@ internal data class SourceFreeForwardSymbols(
 internal object SourceFreeForwardFeature : TelegramFeature<SourceFreeForwardSymbols>() {
     override val id: String = "telegram.forward.source_free"
 
+    private lateinit var stringResources: ModuleStringResources
+
     private const val NORMAL_SUB_ITEM_ID = -0x4d4801
     private const val SOURCE_FREE_SUB_ITEM_ID = -0x4d4802
     private const val PREFS_NAME = "maihoku_forward"
@@ -71,8 +73,7 @@ internal object SourceFreeForwardFeature : TelegramFeature<SourceFreeForwardSymb
     @Volatile
     private var sourceFreeSelected: Boolean? = null
 
-    override fun isEnabled(runtime: TelegramRuntime): Boolean =
-        runtime.config.sourceFreeForwardEnabled
+    override fun isEnabled(runtime: TelegramRuntime): Boolean = runtime.config.sourceFreeForwardEnabled
 
     override fun resolve(runtime: TelegramRuntime): SourceFreeForwardSymbols {
         val profileClass = Class.forName(
@@ -390,6 +391,7 @@ internal object SourceFreeForwardFeature : TelegramFeature<SourceFreeForwardSymb
     }
 
     override fun install(runtime: TelegramRuntime, resolution: SourceFreeForwardSymbols) {
+        stringResources = runtime.strings
         val hookIds = ArrayList<String>()
         try {
             Log.i(
@@ -564,9 +566,9 @@ internal object SourceFreeForwardFeature : TelegramFeature<SourceFreeForwardSymb
         }
 
         item.contentDescription = if (isSelected(item)) {
-            sourceFreeText()
+            sourceFreeText(item.context)
         } else {
-            forwardText()
+            forwardText(item.context)
         }
         item.setOnLongClickListener {
             Log.i(TelegramRuntime.TAG, "$id context forward long-press")
@@ -618,14 +620,14 @@ internal object SourceFreeForwardFeature : TelegramFeature<SourceFreeForwardSymb
             menu,
             NORMAL_SUB_ITEM_ID,
             forwardIcon,
-            forwardText(),
+            forwardText(button.context),
             resourcesProvider,
         ) as View
         val sourceFree = symbols.actionMenuAddSubItem.invoke(
             menu,
             SOURCE_FREE_SUB_ITEM_ID,
             forwardIcon,
-            sourceFreeText(),
+            sourceFreeText(button.context),
             resourcesProvider,
         ) as View
 
@@ -720,7 +722,7 @@ internal object SourceFreeForwardFeature : TelegramFeature<SourceFreeForwardSymb
                 symbols,
                 page,
                 backIcon,
-                backText(),
+                backText(item.context),
             )
             back.setOnClickListener {
                 symbols.closeForeground.invoke(swipeBack, true)
@@ -730,7 +732,7 @@ internal object SourceFreeForwardFeature : TelegramFeature<SourceFreeForwardSymb
                 symbols,
                 page,
                 forwardIcon,
-                forwardText(),
+                forwardText(item.context),
             )
             normal.setOnClickListener {
                 setSelected(item, false)
@@ -743,7 +745,7 @@ internal object SourceFreeForwardFeature : TelegramFeature<SourceFreeForwardSymb
                 symbols,
                 page,
                 forwardIcon,
-                sourceFreeText(),
+                sourceFreeText(item.context),
             )
             sourceFree.setOnClickListener {
                 setSelected(item, true)
@@ -810,9 +812,9 @@ internal object SourceFreeForwardFeature : TelegramFeature<SourceFreeForwardSymb
             .putBoolean(PREF_SOURCE_FREE, selected)
             .apply()
         item.contentDescription = if (selected) {
-            sourceFreeText()
+            sourceFreeText(item.context)
         } else {
-            forwardText()
+            forwardText(item.context)
         }
         updateForwardLabel(item)
         synchronized(bottomForwardMenus) {
@@ -821,7 +823,7 @@ internal object SourceFreeForwardFeature : TelegramFeature<SourceFreeForwardSymb
     }
 
     private fun updateForwardLabel(view: View) {
-        val text = if (isSelected(view)) sourceFreeText() else forwardText()
+        val text = if (isSelected(view)) sourceFreeText(view.context) else forwardText(view.context)
         findTextView(view)?.text = text
         view.contentDescription = text
     }
@@ -882,15 +884,12 @@ internal object SourceFreeForwardFeature : TelegramFeature<SourceFreeForwardSymb
         )
     }
 
-    private fun forwardText(): String =
-        if (isChinese()) "转发" else "Forward"
+    private fun forwardText(context: Context): String = stringResources.get(context, R.string.telegram_forward)
 
-    private fun sourceFreeText(): String =
-        if (isChinese()) "无来源转发" else "Forward without sender"
+    private fun sourceFreeText(context: Context): String = stringResources.get(
+        context,
+        R.string.telegram_forward_without_sender,
+    )
 
-    private fun backText(): String =
-        if (isChinese()) "返回" else "Back"
-
-    private fun isChinese(): Boolean =
-        Locale.getDefault().language.equals("zh", ignoreCase = true)
+    private fun backText(context: Context): String = stringResources.get(context, R.string.telegram_back)
 }

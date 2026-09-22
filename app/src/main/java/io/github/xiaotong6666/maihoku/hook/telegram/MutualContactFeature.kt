@@ -7,10 +7,10 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.TextView
 import android.widget.Toast
+import io.github.xiaotong6666.maihoku.R
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
 import java.util.Collections
-import java.util.Locale
 import java.util.WeakHashMap
 
 internal data class MutualContactSymbols(
@@ -27,8 +27,7 @@ internal object MutualContactFeature : TelegramFeature<MutualContactSymbols>() {
 
     private val indicators = Collections.synchronizedMap(WeakHashMap<Any, TextView>())
 
-    override fun isEnabled(runtime: TelegramRuntime): Boolean =
-        runtime.config.mutualContactEnabled
+    override fun isEnabled(runtime: TelegramRuntime): Boolean = runtime.config.mutualContactEnabled
 
     override fun resolve(runtime: TelegramRuntime): MutualContactSymbols {
         val resolution = runtime.dexKit.useBridge { bridge ->
@@ -148,7 +147,7 @@ internal object MutualContactFeature : TelegramFeature<MutualContactSymbols>() {
                     after {
                         val cell = thisObject as? FrameLayout ?: return@after
                         if (!isContactsListCell(args)) return@after
-                        ensureIndicator(cell)
+                        ensureIndicator(runtime, cell)
                     }
                 }
                 hookIds += constructorId
@@ -164,7 +163,10 @@ internal object MutualContactFeature : TelegramFeature<MutualContactSymbols>() {
                         resolution.userClass.isInstance(obj) &&
                         resolution.mutualContactField.getBoolean(obj)
                     indicator.visibility = if (mutual) View.VISIBLE else View.GONE
-                    indicator.contentDescription = mutualLabel()
+                    indicator.contentDescription = runtime.strings.get(
+                        cell.context,
+                        R.string.telegram_mutual_contact,
+                    )
                 }
             }
             hookIds += updateId
@@ -179,7 +181,7 @@ internal object MutualContactFeature : TelegramFeature<MutualContactSymbols>() {
         return 58 in ints && 1 in ints
     }
 
-    private fun ensureIndicator(cell: FrameLayout) {
+    private fun ensureIndicator(runtime: TelegramRuntime, cell: FrameLayout) {
         if (indicators.containsKey(cell)) return
 
         val context = cell.context
@@ -189,10 +191,17 @@ internal object MutualContactFeature : TelegramFeature<MutualContactSymbols>() {
             gravity = Gravity.CENTER
             setTextColor(Color.GRAY)
             visibility = View.GONE
-            contentDescription = mutualLabel()
+            contentDescription = runtime.strings.get(
+                context,
+                R.string.telegram_mutual_contact,
+            )
             importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
             setOnClickListener {
-                Toast.makeText(context, mutualDescription(), Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    runtime.strings.get(context, R.string.telegram_mutual_contact_description),
+                    Toast.LENGTH_SHORT,
+                ).show()
             }
         }
         val size = dp(context, 40f)
@@ -203,12 +212,5 @@ internal object MutualContactFeature : TelegramFeature<MutualContactSymbols>() {
         indicators[cell] = indicator
     }
 
-    private fun mutualLabel(): String =
-        if (Locale.getDefault().language.startsWith("zh")) "双向联系人" else "Mutual contact"
-
-    private fun mutualDescription(): String =
-        if (Locale.getDefault().language.startsWith("zh")) "此联系人是双向联系人" else "This contact is mutual"
-
-    private fun dp(context: Context, value: Float): Int =
-        (value * context.resources.displayMetrics.density + 0.5f).toInt()
+    private fun dp(context: Context, value: Float): Int = (value * context.resources.displayMetrics.density + 0.5f).toInt()
 }

@@ -8,8 +8,7 @@ internal object ApiIdentityFeature : TelegramFeature<BuildVarsSymbols>() {
 
     override fun isEnabled(runtime: TelegramRuntime): Boolean = runtime.config.hasValidIdentity
 
-    override fun resolve(runtime: TelegramRuntime): BuildVarsSymbols =
-        StableSymbols.resolveBuildVars(runtime)
+    override fun resolve(runtime: TelegramRuntime): BuildVarsSymbols = StableSymbols.resolveBuildVars(runtime)
 
     override fun install(runtime: TelegramRuntime, resolution: BuildVarsSymbols) {
         runtime.hooks.classInitializer(resolution.clazz, id) {

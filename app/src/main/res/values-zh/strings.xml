@@ -1,0 +1,10 @@
+<resources>
+    <string name="telegram_mutual_contact">双向联系人</string>
+    <string name="telegram_mutual_contact_description">此联系人是双向联系人</string>
+    <string name="telegram_copy_id">复制 ID</string>
+    <string name="telegram_copy_dc">复制 DC：%1$s</string>
+    <string name="telegram_copy_id_dc">复制 ID + DC</string>
+    <string name="telegram_forward">转发</string>
+    <string name="telegram_forward_without_sender">无来源转发</string>
+    <string name="telegram_back">返回</string>
+</resources>

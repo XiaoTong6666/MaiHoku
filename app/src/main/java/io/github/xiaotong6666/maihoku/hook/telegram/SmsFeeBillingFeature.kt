@@ -13,8 +13,7 @@ internal data class SmsFeeBillingSymbols(
 internal object SmsFeeBillingFeature : TelegramFeature<SmsFeeBillingSymbols>() {
     override val id: String = "telegram.sms.fee_billing"
 
-    override fun isEnabled(runtime: TelegramRuntime): Boolean =
-        runtime.config.smsProfileEnabled
+    override fun isEnabled(runtime: TelegramRuntime): Boolean = runtime.config.smsProfileEnabled
 
     override fun resolve(runtime: TelegramRuntime): SmsFeeBillingSymbols {
         val buildVars = StableSymbols.resolveBuildVars(runtime)

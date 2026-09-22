@@ -11,11 +11,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
+import io.github.xiaotong6666.maihoku.R
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 import java.util.Collections
-import java.util.Locale
 import java.util.WeakHashMap
 import kotlin.math.floor
 import kotlin.math.min
@@ -64,8 +64,7 @@ internal object ProfileIdentityFeature : TelegramFeature<ProfileIdentitySymbols>
 
     private val instances = Collections.synchronizedMap(WeakHashMap<Any, ProfileIdentityUi>())
 
-    override fun isEnabled(runtime: TelegramRuntime): Boolean =
-        runtime.config.profileIdentityEnabled
+    override fun isEnabled(runtime: TelegramRuntime): Boolean = runtime.config.profileIdentityEnabled
 
     override fun resolve(runtime: TelegramRuntime): ProfileIdentitySymbols {
         val profileClass = Class.forName(
@@ -445,7 +444,7 @@ internal object ProfileIdentityFeature : TelegramFeature<ProfileIdentitySymbols>
             if (ui.id == 0L && ui.dc == 0) return@setOnLongClickListener false
             if (symbols.itemOptions == null) return@setOnLongClickListener false
             it.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
-            runCatching { showIdentityMenu(symbols, ui) }
+            runCatching { showIdentityMenu(runtime, symbols, ui) }
                 .onFailure { error ->
                     android.util.Log.w(
                         TelegramRuntime.TAG,
@@ -635,7 +634,11 @@ internal object ProfileIdentityFeature : TelegramFeature<ProfileIdentitySymbols>
         ui.label.visibility = ui.statusAnchor.visibility
     }
 
-    private fun showIdentityMenu(symbols: ProfileIdentitySymbols, ui: ProfileIdentityUi) {
+    private fun showIdentityMenu(
+        runtime: TelegramRuntime,
+        symbols: ProfileIdentitySymbols,
+        ui: ProfileIdentityUi,
+    ) {
         val itemOptions = symbols.itemOptions ?: return
         val options = itemOptions.factory.invoke(null, ui.profile, ui.label) ?: return
         val resources = ui.label.resources
@@ -648,7 +651,7 @@ internal object ProfileIdentityFeature : TelegramFeature<ProfileIdentitySymbols>
                 itemOptions,
                 options,
                 copyIcon,
-                copyIdText(),
+                runtime.strings.get(ui.label.context, R.string.telegram_copy_id),
                 Runnable { copy(symbols, ui.id.toString()) },
             )
         }
@@ -657,7 +660,11 @@ internal object ProfileIdentityFeature : TelegramFeature<ProfileIdentitySymbols>
                 itemOptions,
                 options,
                 dcIcon.takeIf { it != 0 } ?: copyIcon,
-                copyDcText(ui.dc),
+                runtime.strings.get(
+                    ui.label.context,
+                    R.string.telegram_copy_dc,
+                    formatDcString(ui.dc),
+                ),
                 Runnable { copy(symbols, ui.dc.toString()) },
             )
         }
@@ -666,7 +673,7 @@ internal object ProfileIdentityFeature : TelegramFeature<ProfileIdentitySymbols>
                 itemOptions,
                 options,
                 copyIcon,
-                copyBothText(),
+                runtime.strings.get(ui.label.context, R.string.telegram_copy_id_dc),
                 Runnable { copy(symbols, "ID: ${ui.id}, DC: ${ui.dc}") },
             )
         }
@@ -691,17 +698,6 @@ internal object ProfileIdentityFeature : TelegramFeature<ProfileIdentitySymbols>
         symbols.itemOptions?.addToClipboard?.invoke(null, value)
     }
 
-    private fun copyIdText(): String =
-        if (isChinese()) "复制 ID" else "Copy ID"
-
-    private fun copyDcText(dc: Int): String =
-        if (isChinese()) "复制 DC：${formatDcString(dc)}" else "Copy DC: ${formatDcString(dc)}"
-
-    private fun copyBothText(): String =
-        if (isChinese()) "复制 ID + DC" else "Copy ID + DC"
-
-    private fun isChinese(): Boolean = Locale.getDefault().language.startsWith("zh")
-
     private fun formatDcString(dc: Int): String {
         val name = when (dc) {
             1 -> "Pluto"
@@ -720,6 +716,5 @@ internal object ProfileIdentityFeature : TelegramFeature<ProfileIdentitySymbols>
         return "DC$dc $name, $location"
     }
 
-    private fun dp(context: Context, value: Float): Float =
-        value * context.resources.displayMetrics.density
+    private fun dp(context: Context, value: Float): Float = value * context.resources.displayMetrics.density
 }

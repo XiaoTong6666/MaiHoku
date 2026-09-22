@@ -1,3 +1,11 @@
 <resources>
-    <string name="app_name">MaiHoku</string>
+    <string name="app_name" translatable="false">MaiHoku</string>
+    <string name="telegram_mutual_contact">Mutual contact</string>
+    <string name="telegram_mutual_contact_description">This contact is mutual</string>
+    <string name="telegram_copy_id">Copy ID</string>
+    <string name="telegram_copy_dc">Copy DC: %1$s</string>
+    <string name="telegram_copy_id_dc">Copy ID + DC</string>
+    <string name="telegram_forward">Forward</string>
+    <string name="telegram_forward_without_sender">Forward without sender</string>
+    <string name="telegram_back">Back</string>
 </resources>
