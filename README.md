@@ -2,7 +2,7 @@
 
 MaiHoku 是一个基于 libxposed API 102 的 Android Xposed 模块，目前包含以下功能：
 
-- **MIUI Screen Recorder**：在支持 120 Hz 的设备上启用 120 FPS 录屏选项。
+- **MIUI Screen Recorder**：根据设备支持的刷新率启用 120/144 FPS 录屏选项。
 - **Termux**：双击终端左侧边缘打开侧边栏。
 - **Telegram**：
   - 自定义 MTProto API identity。

@@ -8,7 +8,7 @@ import io.github.libxposed.api.XposedModuleInterface.PackageReadyParam
 import io.github.xiaotong6666.maihoku.hook.BaseHook
 import io.github.xiaotong6666.maihoku.hook.DoubleClickDrawerHook
 import io.github.xiaotong6666.maihoku.hook.HookRuntime
-import io.github.xiaotong6666.maihoku.hook.ScreenRecorder120FpsHook
+import io.github.xiaotong6666.maihoku.hook.ScreenRecorderHighFpsHook
 import io.github.xiaotong6666.maihoku.hook.telegram.TelegramHook
 
 const val SCREEN_RECORDER_PACKAGE = "com.miui.screenrecorder"
@@ -39,7 +39,7 @@ class MainHook : XposedModule() {
         )
 
         when (param.packageName) {
-            SCREEN_RECORDER_PACKAGE -> initHooks(runtime, ScreenRecorder120FpsHook)
+            SCREEN_RECORDER_PACKAGE -> initHooks(runtime, ScreenRecorderHighFpsHook)
             TERMUX_PACKAGE -> initHooks(runtime, DoubleClickDrawerHook)
             in TELEGRAM_PACKAGES -> initHooks(runtime, TelegramHook)
         }

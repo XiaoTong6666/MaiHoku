@@ -2,20 +2,29 @@ package io.github.xiaotong6666.maihoku.hook
 
 import android.app.Application
 import android.content.Context
+import android.hardware.display.DisplayManager
 import android.os.Build
 import android.util.Log
 import android.view.Display
-import android.view.WindowManager
 import io.github.kyuubiran.ezxhelper.core.finder.MethodFinder
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 
-object ScreenRecorder120FpsHook : BaseHook() {
-    override val name: String = "ScreenRecorder120FpsHook"
+object ScreenRecorderHighFpsHook : BaseHook() {
+    override val name: String = "ScreenRecorderHighFpsHook"
 
-    private const val TARGET_FPS = "120"
-    private const val TARGET_LABEL = "120fps"
-    private val knownFrameValues = setOf("15", "24", "30", "48", "60", "90", TARGET_FPS)
+    private data class FrameRateOption(
+        val fps: Int,
+        val value: String = fps.toString(),
+        val label: String = "${fps}fps",
+    )
+
+    private val highFrameRateOptions = listOf(
+        FrameRateOption(120),
+        FrameRateOption(144),
+    )
+    private val knownFrameValues = setOf("15", "24", "30", "48", "60", "90") +
+        highFrameRateOptions.map { it.value }
 
     private data class ResolvedTarget(
         val configClass: Class<*>,
@@ -39,16 +48,15 @@ object ScreenRecorder120FpsHook : BaseHook() {
         }
     }
 
-    private fun supports120Fps(context: Context): Boolean {
-        val windowManager = context.getSystemService(WindowManager::class.java) ?: return false
+    private fun supportedHighFrameRates(context: Context): List<FrameRateOption> {
+        val displayManager = context.getSystemService(DisplayManager::class.java) ?: return emptyList()
         val display = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            context.display ?: windowManager.defaultDisplay
+            context.display ?: displayManager.displays.firstOrNull()
         } else {
-            @Suppress("DEPRECATION")
-            windowManager.defaultDisplay
-        }
-        val refreshRates = readSupportedRefreshRates(display)
-        return refreshRates.maxOrNull()?.let { it >= 120f } == true
+            displayManager.displays.firstOrNull()
+        } ?: return emptyList()
+        val maxRefreshRate = readSupportedRefreshRates(display).maxOrNull() ?: return emptyList()
+        return highFrameRateOptions.filter { maxRefreshRate >= it.fps - 0.5f }
     }
 
     private fun readSupportedRefreshRates(display: Display): FloatArray {
@@ -69,8 +77,9 @@ object ScreenRecorder120FpsHook : BaseHook() {
         runtime.hooks.method(resolved.initMethod, "screenrecorder.config.init") {
             after {
                 val targetContext = arg(0) as? Context ?: context
-                if (!supports120Fps(targetContext)) return@after
-                enable120FpsOption(resolved.configClass)
+                val supportedOptions = supportedHighFrameRates(targetContext)
+                if (supportedOptions.isEmpty()) return@after
+                enableHighFrameRateOptions(resolved.configClass, supportedOptions)
             }
         }
         bootstrapped = true
@@ -124,7 +133,10 @@ object ScreenRecorder120FpsHook : BaseHook() {
         }
     }
 
-    private fun enable120FpsOption(configClass: Class<*>) {
+    private fun enableHighFrameRateOptions(
+        configClass: Class<*>,
+        supportedOptions: List<FrameRateOption>,
+    ) {
         val staticLists = configClass.declaredFields
             .filter { Modifier.isStatic(it.modifiers) && List::class.java.isAssignableFrom(it.type) }
             .onEach { it.isAccessible = true }
@@ -136,7 +148,6 @@ object ScreenRecorder120FpsHook : BaseHook() {
 
         @Suppress("UNCHECKED_CAST")
         val values = valueField.get(null) as? MutableList<Any?> ?: return
-        if (values.any { it?.toString() == TARGET_FPS }) return
 
         val labels = staticLists.firstNotNullOfOrNull { field ->
             @Suppress("UNCHECKED_CAST")
@@ -146,9 +157,15 @@ object ScreenRecorder120FpsHook : BaseHook() {
             if (isFrameLabelList(items, values)) items else null
         } ?: return
 
-        values.add(TARGET_FPS)
-        labels.add(TARGET_LABEL)
-        Log.i(name, "Injected 120fps option into ${configClass.name}")
+        val existingValues = values.mapNotNull { it?.toString() }.toSet()
+        val added = supportedOptions.filterNot { it.value in existingValues }
+        if (added.isEmpty()) return
+
+        added.forEach { option ->
+            values.add(option.value)
+            labels.add(option.label)
+        }
+        Log.i(name, "Injected ${added.joinToString { it.label }} into ${configClass.name}")
     }
 
     private fun isFrameValueList(values: List<*>): Boolean {
