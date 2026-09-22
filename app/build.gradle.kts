@@ -36,6 +36,10 @@ val escapedTelegramApiHash = telegramApiHash
     .replace("\\", "\\\\")
     .replace("\"", "\\\"")
 
+val gitCommitId = rootProject.extra["gitCommitId"] as String
+val gitCommitCount = rootProject.extra["gitCommitCount"] as Int
+val maiHokuVersionName = "1.$gitCommitCount"
+
 android {
     namespace = "io.github.xiaotong6666.maihoku"
     compileSdk = 36
@@ -44,12 +48,13 @@ android {
         applicationId = "io.github.xiaotong6666.maihoku"
         minSdk = 26
         targetSdk = 36
-        versionCode = 2
-        versionName = "1.1"
+        versionCode = gitCommitCount
+        versionName = maiHokuVersionName
 
         buildConfigField("boolean", "TELEGRAM_IDENTITY_CONFIGURED", telegramIdentityConfigured.toString())
         buildConfigField("int", "TELEGRAM_API_ID", telegramApiId.toString())
         buildConfigField("String", "TELEGRAM_API_HASH", "\"$escapedTelegramApiHash\"")
+        buildConfigField("String", "COMMIT_HASH", "\"$gitCommitId\"")
     }
 
     buildFeatures {

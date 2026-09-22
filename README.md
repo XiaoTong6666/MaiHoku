@@ -1,49 +1,53 @@
 # MaiHoku
 
-MaiHoku 是一个基于 libxposed API 102 的 Android Xposed 模块，将多个 Hook 合并到同一个 APK：
+MaiHoku 是一个基于 libxposed API 102 的 Android Xposed 模块，目前包含以下功能：
 
-- `com.miui.screenrecorder`：在支持 120 Hz 的设备上启用屏幕录制 120 FPS 选项。
-- `com.termux`：双击终端左侧边缘时打开侧边栏。
-- `org.telegram.messenger` / `org.telegram.messenger.web`：Telegram 官方客户端增强框架。动态符号采用 DexKit，反射辅助使用 EzXHelper core，真正的 Hook 统一由 libxposed API 102 执行；首个功能为可配置的 MTProto API identity override。
+- **MIUI Screen Recorder**：在支持 120 Hz 的设备上启用 120 FPS 录屏选项。
+- **Termux**：双击终端左侧边缘打开侧边栏。
+- **Telegram**：
+  - 自定义 MTProto API identity。
+  - 登录 / SMS 兼容处理。
+  - 联系人列表显示双向联系人标记。
+  - Profile 页面显示用户 ID 与 DC，支持长按复制。
+  - 支持普通转发与无来源转发，并记住上次选择。
 
-模块使用静态作用域，只会加载到上述目标包。统一入口会根据当前包名初始化对应 Hook，各功能互不影响。
+当前作用域：
+
+```text
+com.miui.screenrecorder
+com.termux
+org.telegram.messenger
+org.telegram.messenger.web
+```
 
 ## Telegram API identity
 
-Telegram API identity 不写死在源码中。构建时由 Gradle 从项目根目录、已被 `.gitignore` 忽略的 `local.properties` 读取：
+在项目根目录的 `local.properties` 中配置：
 
 ```properties
 telegram.api_id=<api-id>
 telegram.api_hash=<api-hash>
 ```
 
-`telegram.api_id` 与 `telegram.api_hash` 必须同时提供。两者都未设置时，构建仍可正常完成，但生成的默认 identity 为空，运行时 `ApiIdentityFeature` 默认不启用。
+两项必须同时提供。未配置时模块仍可正常构建，但 API identity override 默认关闭。
 
-Hook 进程仍通过 libxposed API 102 remote preferences 读取 `telegram` 组，因此可以覆盖默认值：
+这些值会被编译进 APK，请不要把它们当作秘密存储。
 
-- `identity.enabled`：`Boolean`，默认值取决于构建时是否提供了完整 identity。
-- `identity.api_id`：`Int`，默认来自构建时 `local.properties` 的 `telegram.api_id`。
-- `identity.api_hash`：`String`，默认来自构建时 `local.properties` 的 `telegram.api_hash`。
-- `sms.profile_enabled`：`Boolean`，默认 `true`。启用登录/SMS 兼容策略：关闭 Firebase/Play Integrity SMS 能力、关闭官方-only Passkey，并在 SMS Fee 页面优先使用 Telegram invoice billing。
-- `ui.mutual_contact_enabled`：`Boolean`，默认 `true`。在联系人列表中对 `TLRPC.User.mutual_contact=true` 的用户显示 `⇄` 双向联系人标记。
-- `ui.profile_identity_enabled`：`Boolean`，默认 `true`。在 ProfileActivity 头像/状态区域显示 `ID: <userId>, DC: <dc>`；长按可复制 ID、DC 或两者。为了兼容前一版，也会把旧的 `ui.user_card_dc_enabled` 作为默认回退值读取。
-- `forward.source_free_enabled`：`Boolean`，默认 `true`。在消息长按菜单中长按“转发”会进入二级转发模式页；进入消息选择状态后，右下角的转发按钮也支持长按选择“转发”或“无来源转发”。当前转发模式会被持久化记住，之后普通点击任意转发入口都会继续沿用上一次选择。无来源模式仍走官方转发链路，只把 `forwardFromMyName` 设置为 `true`，不会绕过禁止转发或内容保护限制。
+## Telegram 配置
 
-构建时提供 identity 后，官方 Telegram 进程进入 `onPackageReady()` 会使用 Gradle 生成的 `BuildConfig.TELEGRAM_API_ID/TELEGRAM_API_HASH` 覆盖 `BuildVars.APP_ID/APP_HASH`。模块先验证字段结构，再 Hook `BuildVars.<clinit>` 并覆盖值；同时对已完成类初始化的场景执行一次立即写入。`TL_auth_sendCode` 与 `TL_auth_exportLoginToken` 在序列化前会执行只读 audit，日志只输出 API hash 的短 SHA-256 指纹，不输出完整 hash。
+Telegram 功能通过 libxposed remote preferences 读取配置：
 
-这只是不把 API identity 提交到 Git 仓库；如果把值编译进 APK，它最终仍会存在于生成的 DEX/BuildConfig 中，不能把这种构建注入当作加密或秘密存储。
+| Key | 默认值 | 说明 |
+| --- | --- | --- |
+| `identity.enabled` | 自动 | 启用 API identity override |
+| `identity.api_id` | 构建配置 | API ID |
+| `identity.api_hash` | 构建配置 | API Hash |
+| `sms.profile_enabled` | `true` | 登录 / SMS 兼容 |
+| `ui.mutual_contact_enabled` | `true` | 双向联系人标记 |
+| `ui.profile_identity_enabled` | `true` | Profile ID / DC |
+| `forward.source_free_enabled` | `true` | 无来源转发 |
 
-SMS authentication profile 不会吞掉或伪造 `auth.sentCodePaymentRequired`。模块会把 `BuildVars.SAFETYNET_KEY` 置空、`SUPPORTS_PASSKEYS` 置为 `false`，并在 `TL_codeSettings` 序列化前强制 `allow_firebase=false`。如果服务端仍返回 `TL_auth_sentCodeTypeFirebaseSms`，则在其反序列化完成后标记 `verifiedFirebase=true`，使官端跳过 Play Integrity/SafetyNet 中间请求，继续走后续普通 SMS 页面路径。SMS Fee 页通过 DexKit 语义定位，仅在该页面调用 `BuildVars.useInvoiceBilling()` 时返回 `true`，不会全局改变其他 Premium/Stars 等支付页面的 billing 策略。
-
-联系人双向标记按联系人列表的目标覆盖范围实现：仅在 `ContactsAdapter` 创建联系人 `UserCell` 时启用双向联系人标记，MaiHoku 不修改官端构造签名，而是用 DexKit 找到官端 `UserCell`，只对联系人列表使用的 `58/1` cell 注入同等语义的 `⇄` 标记。用户 ID/DC 则对齐目标 `ProfileActivity` 顶部身份信息展示方式：挂在官端现有状态文本下方，用户 DC 来自 `user.photo.dc_id`，自己的账号无头像 DC 时回退到当前连接的数据中心；长按显示复制菜单。
-
-无来源转发复用 Telegram 自己的转发实现，而不是重新构造消息。模块对消息长按菜单中的原生 `msg_forward` 行增加右箭头和长按入口，二级页面继续使用 Telegram 自带 `ActionBarPopupWindowLayout` 与 `PopupSwipeBackLayout`，因此交互方式与原生弹窗保持一致。对于长按消息后进入选择状态时出现的右下角转发按钮，模块也按目标客户端的做法把原按钮包装进 Telegram 自带 `ActionBarMenuItem`，长按时显示原生子菜单，在普通转发与无来源转发之间切换。
-
-当前选择使用独立 SharedPreferences 持久化保存，因此消息菜单、消息选择状态右下角按钮以及后续普通点击都会共享同一转发模式。切换模式后按钮文案也会跟随当前状态更新；重新进入会话或 Telegram 进程重启后仍会恢复上一次选择。真正发送时只在 `SendMessagesHelper.sendMessage(ArrayList<MessageObject>, ...)` 的转发参数中将第三个 `forwardFromMyName` 参数设为 `true`，并用短生命周期的发送状态把影响限定在当前转发流程内。
-
-## 从旧模块迁移
-
-MaiHoku 使用新的应用 ID `io.github.xiaotong6666.maihoku`。安装并启用 MaiHoku 后，请在 Xposed 管理器中禁用或卸载原来的 `sr120hook` 和 `TermuxHook`，避免同一个功能被重复 Hook。
+无来源转发复用 Telegram 原有转发流程，仅切换 `forwardFromMyName`，不会绕过禁止转发或内容保护限制。
 
 ## 构建
 
@@ -51,8 +55,26 @@ MaiHoku 使用新的应用 ID `io.github.xiaotong6666.maihoku`。安装并启用
 ./gradlew assembleRelease
 ```
 
-生成的 APK 位于 `app/build/outputs/apk/release/`。
+输出：
 
-构建环境：Compile SDK 36、Min SDK 26、Java 17、libxposed API 102。
+```text
+app/build/outputs/apk/release/
+```
 
-默认从 Maven Central 获取 EzXHelper。如需调试 EzXHelper 本地源码，可将 `EZXHELPER_PATH` 指向其项目目录后再构建。
+构建环境：
+
+- Compile SDK 36
+- Min SDK 26
+- Java 17
+- libxposed API 102
+
+## CI
+
+- 推送到 `main`：自动构建并更新 `nightly` Release。
+- 推送 tag：发布对应正式 Release。
+
+# Credits
+
+[EzXHelper](https://github.com/KyuubiRan/EzXHelper)  
+[DexKit](https://github.com/LuckyPray/DexKit)  
+[libxposed API](https://github.com/libxposed/api)  
