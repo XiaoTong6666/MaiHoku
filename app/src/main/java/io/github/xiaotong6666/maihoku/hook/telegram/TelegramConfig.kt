@@ -10,6 +10,7 @@ internal data class TelegramConfig(
     val mutualContactEnabled: Boolean,
     val profileIdentityEnabled: Boolean,
     val sourceFreeForwardEnabled: Boolean,
+    val translationEnabled: Boolean,
 ) {
     val hasValidIdentity: Boolean
         get() = identityEnabled && apiId > 0 && apiHash.isNotBlank()
@@ -37,6 +38,10 @@ internal data class TelegramConfig(
                 ) ?: true,
                 sourceFreeForwardEnabled = prefs?.getBoolean(
                     "forward.source_free_enabled",
+                    true,
+                ) ?: true,
+                translationEnabled = prefs?.getBoolean(
+                    "translation.enabled",
                     true,
                 ) ?: true,
             )

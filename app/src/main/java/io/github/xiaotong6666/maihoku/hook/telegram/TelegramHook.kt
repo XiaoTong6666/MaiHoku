@@ -14,6 +14,7 @@ object TelegramHook : BaseHook() {
         MutualContactFeature,
         ProfileIdentityFeature,
         SourceFreeForwardFeature,
+        TranslationFeature,
         IdentityAuditFeature,
     )
 
