@@ -31,7 +31,11 @@ dependencyResolutionManagement {
                 includeGroupByRegex("androidx.*")
             }
         }
-        maven("https://maven.aliyun.com/repository/public")
+        maven("https://maven.aliyun.com/repository/public") {
+            content {
+                excludeGroup("app.nekogram.translator")
+            }
+        }
         google()
         mavenCentral()
         maven("https://api.xposed.info/")

@@ -98,4 +98,5 @@ dependencies {
     compileOnly(libs.libxposed.api)
     implementation(libs.ezxhelper.core)
     implementation(libs.dexkit)
+    implementation(libs.nekogram.translator)
 }

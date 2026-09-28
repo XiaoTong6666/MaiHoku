@@ -4,11 +4,13 @@ ezxhelper = "3.2.0-preview1"
 libxposed-api = "102.0.0"
 dexkit = "2.0.0"
 spotless = "8.10.2"
+nekogram-translator = "1.5.5"
 
 [libraries]
 libxposed-api = { module = "io.github.libxposed:api", version.ref = "libxposed-api" }
 ezxhelper-core = { module = "io.github.kyuubiran.ezxhelper:core", version.ref = "ezxhelper" }
 dexkit = { module = "org.luckypray:dexkit", version.ref = "dexkit" }
+nekogram-translator = { module = "app.nekogram.translator:translator", version.ref = "nekogram-translator" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
