@@ -1,9 +1,9 @@
 package io.github.xiaotong6666.maihoku.hook.telegram
 
 import android.os.Bundle
-import android.util.Log
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
+import io.github.xiaotong6666.maihoku.MaiHokuLog as Log
 
 internal data class SmsFeeBillingSymbols(
     val useInvoiceBilling: Method,

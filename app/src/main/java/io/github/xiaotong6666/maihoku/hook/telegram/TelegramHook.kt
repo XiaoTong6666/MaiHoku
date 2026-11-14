@@ -1,8 +1,8 @@
 package io.github.xiaotong6666.maihoku.hook.telegram
 
-import android.util.Log
 import io.github.xiaotong6666.maihoku.hook.BaseHook
 import io.github.xiaotong6666.maihoku.hook.HookRuntime
+import io.github.xiaotong6666.maihoku.MaiHokuLog as Log
 
 object TelegramHook : BaseHook() {
     override val name: String = "TelegramHook"

@@ -1,7 +1,6 @@
 package io.github.xiaotong6666.maihoku.hook.telegram
 
 import android.os.SystemClock
-import android.util.Log
 import io.github.xiaotong6666.maihoku.translation.GoogleTranslationBackend
 import io.github.xiaotong6666.maihoku.translation.TranslationBackend
 import java.lang.reflect.Constructor
@@ -17,6 +16,7 @@ import java.util.concurrent.Future
 import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import io.github.xiaotong6666.maihoku.MaiHokuLog as Log
 
 internal data class TranslationSymbols(
     val featureAvailable: Method,

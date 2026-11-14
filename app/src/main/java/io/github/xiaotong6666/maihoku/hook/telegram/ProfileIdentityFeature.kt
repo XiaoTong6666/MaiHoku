@@ -19,6 +19,7 @@ import java.util.Collections
 import java.util.WeakHashMap
 import kotlin.math.floor
 import kotlin.math.min
+import io.github.xiaotong6666.maihoku.MaiHokuLog as Log
 
 internal data class ProfileIdentitySymbols(
     val profileClass: Class<*>,
@@ -130,7 +131,7 @@ internal object ProfileIdentityFeature : TelegramFeature<ProfileIdentitySymbols>
         val itemOptions = runCatching {
             resolveItemOptions(runtime, baseFragmentClass)
         }.onFailure { error ->
-            android.util.Log.w(
+            Log.w(
                 TelegramRuntime.TAG,
                 "$id Telegram item-options unavailable; ID/DC display remains enabled",
                 error,
@@ -446,7 +447,7 @@ internal object ProfileIdentityFeature : TelegramFeature<ProfileIdentitySymbols>
             it.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
             runCatching { showIdentityMenu(runtime, symbols, ui) }
                 .onFailure { error ->
-                    android.util.Log.w(
+                    Log.w(
                         TelegramRuntime.TAG,
                         "$id failed to show identity popup",
                         error,
@@ -484,7 +485,7 @@ internal object ProfileIdentityFeature : TelegramFeature<ProfileIdentitySymbols>
 
         refresh(symbols, profile)
         syncPosition(symbols, ui)
-        android.util.Log.i(TelegramRuntime.TAG, "$id attached")
+        Log.i(TelegramRuntime.TAG, "$id attached")
     }
 
     private fun findProfileAnchors(symbols: ProfileIdentitySymbols, profile: Any): Pair<View, View> {

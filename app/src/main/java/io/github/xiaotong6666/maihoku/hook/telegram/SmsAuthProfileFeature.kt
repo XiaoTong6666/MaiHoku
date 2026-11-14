@@ -1,9 +1,9 @@
 package io.github.xiaotong6666.maihoku.hook.telegram
 
-import android.util.Log
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
+import io.github.xiaotong6666.maihoku.MaiHokuLog as Log
 
 internal data class SmsAuthProfileSymbols(
     val buildVars: BuildVarsSymbols,

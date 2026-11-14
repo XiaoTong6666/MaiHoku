@@ -1,7 +1,7 @@
 package io.github.xiaotong6666.maihoku.hook.telegram
 
-import android.util.Log
 import java.security.MessageDigest
+import io.github.xiaotong6666.maihoku.MaiHokuLog as Log
 
 internal object ApiIdentityFeature : TelegramFeature<BuildVarsSymbols>() {
     override val id: String = "telegram.identity.buildvars"

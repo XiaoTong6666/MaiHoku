@@ -4,7 +4,6 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
-import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -17,6 +16,7 @@ import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 import java.util.Collections
 import java.util.WeakHashMap
+import io.github.xiaotong6666.maihoku.MaiHokuLog as Log
 
 internal data class SourceFreeForwardSymbols(
     val contextMenuBuilder: Method,
