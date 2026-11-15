@@ -4,11 +4,11 @@ import android.app.Application
 import android.content.Context
 import android.hardware.display.DisplayManager
 import android.os.Build
-import android.util.Log
 import android.view.Display
 import io.github.kyuubiran.ezxhelper.core.finder.MethodFinder
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
+import io.github.xiaotong6666.maihoku.MaiHokuLog as Log
 
 object ScreenRecorderHighFpsHook : BaseHook() {
     override val name: String = "ScreenRecorderHighFpsHook"

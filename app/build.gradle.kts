@@ -99,4 +99,6 @@ dependencies {
     implementation(libs.ezxhelper.core)
     implementation(libs.dexkit)
     implementation(libs.nekogram.translator)
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.json:json:20260814")
 }

@@ -13,25 +13,8 @@ internal object MaiHokuLog {
     fun e(tag: String, message: String, error: Throwable) = AndroidLog.e(LOG_TAG, format(tag, message), error)
 
     private fun format(tag: String, message: String): String {
-        val scope = when {
-            tag == LOG_TAG -> null
-            tag.startsWith("MaiHoku-") -> tag.removePrefix("MaiHoku-")
-            else -> tag
-        } ?: return message
-        val label = when {
-            scope.startsWith("GoogleMessages") -> "GoogleMsg"
-            scope.startsWith("AospMessaging") -> "AospMsg"
-            scope.startsWith("MiMessage") -> scope.removePrefix("MiMessage").ifBlank { "MiMessage" }
-            scope.startsWith("MessagingHost") -> scope.removePrefix("MessagingHost").ifBlank { "MessagingHost" }
-            scope.startsWith("Xiaomi") -> scope.removePrefix("Xiaomi").ifBlank { "Xiaomi" }
-            scope.startsWith("SimActivation") -> "SimActivation"
-            scope.startsWith("PrivilegedSim") -> "PrivilegedSim"
-            scope.startsWith("AccountBridge") -> "AccountBridge"
-            scope.startsWith("Telegram") -> "Telegram"
-            scope.startsWith("Termux") -> scope.removePrefix("Termux")
-            else -> scope
-        }
-        return "[$label] $message"
+        if (tag == LOG_TAG) return message
+        return "[$tag] $message"
     }
 
     private const val LOG_TAG = "MaiHoku"

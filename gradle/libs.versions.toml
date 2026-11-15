@@ -2,7 +2,7 @@
 agp = "9.1.0"
 ezxhelper = "3.2.0-preview1"
 libxposed-api = "102.0.0"
-dexkit = "2.0.0"
+dexkit = "2.3.0"
 spotless = "8.10.2"
 nekogram-translator = "1.5.5"
 

@@ -20,7 +20,7 @@ internal class TelegramRuntime(
     }
 
     companion object {
-        const val TAG = "MaiHoku-Telegram"
+        const val TAG = "Telegram"
     }
 }
 

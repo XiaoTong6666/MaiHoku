@@ -9,3 +9,13 @@ captures/
 .cxx/
 .DS_Store
 .kotlin/
+app/src/debug/
+app/src/test/
+.tmp/
+__pycache__/
+
+# Local reverse engineering notes, probes and disposable test projects.
+docs/
+scripts/
+tests/
+tools/

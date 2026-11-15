@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- The host category layout supplies native spacing; text is assigned from module resources. -->
+    <PreferenceCategory android:key="maihoku_xiaomi_sms_spacer" android:selectable="false" android:order="2147483645" />
+    <PreferenceScreen android:key="maihoku_xiaomi_sms_entry" android:order="2147483646" />
+</PreferenceScreen>

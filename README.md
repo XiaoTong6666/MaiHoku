@@ -4,6 +4,7 @@ MaiHoku 是一个基于 libxposed API 102 的 Android Xposed 模块，目前包�
 
 - **MIUI Screen Recorder**：根据设备支持的刷新率启用 120/144 FPS 录屏选项。
 - **Termux**：双击终端左侧边缘打开侧边栏。
+- **Google Messages / AOSP Messaging**：在原生设置页注入「小米网络短信」入口，支持 SIM 激活、账号验证、联系人在线状态和网络短信收发。Push 前台服务负责连接恢复、消息持久化和回执；宿主适配器复用短信 App 的原生收件、会话和发送状态流程。当前 Push 连接仅支持 SIM 1，不同宿主版本仍需分别验证兼容性。
 - **Telegram**：
   - 自定义 MTProto API identity。
   - 登录 / SMS 兼容处理。
@@ -16,6 +17,10 @@ MaiHoku 是一个基于 libxposed API 102 的 Android Xposed 模块，目前包�
 ```text
 com.miui.screenrecorder
 com.termux
+com.google.android.apps.messaging
+com.android.messaging
+com.android.mms
+com.android.phone
 org.telegram.messenger
 org.telegram.messenger.web
 ```
@@ -67,6 +72,14 @@ app/build/outputs/apk/release/
 - Min SDK 26
 - Java 17
 - libxposed API 102
+
+## 小米网络短信
+
+在 Xposed 管理器中启用短信宿主，以及用于提供特权 SIM 身份的系统电话 / MIUI 短信作用域，重启对应进程后进入短信 App 设置中的「小米网络短信」。首次激活需要确认发送运营商短信；后续可独立刷新网络短信凭据，无需重复发送激活短信。
+
+SIM 激活账号、Mixin 凭据和 Passport 验证状态保存在 MaiHoku UID 的私有 SharedPreferences 中，不使用应用层加密或 Android Keystore。短信宿主通过账号桥获取状态和操作结果，不接收账号密钥。模块不新增短信 App 或桌面入口，也不修改系统 APK。
+
+Google Messages 与 AOSP/Lineage Messaging 使用各自的 DexKit 适配器。原生收件流程分别复用 Google 的 SmsReceivePipeline 与 AOSP 的 ReceiveSmsMessageAction；宿主升级后需要重新校验符号匹配和运行时兼容性。
 
 ## CI
 

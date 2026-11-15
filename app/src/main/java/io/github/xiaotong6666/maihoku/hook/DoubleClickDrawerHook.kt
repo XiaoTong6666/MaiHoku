@@ -1,6 +1,5 @@
 package io.github.xiaotong6666.maihoku.hook
 
-import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -9,6 +8,7 @@ import io.github.xiaotong6666.maihoku.TERMUX_PACKAGE
 import org.luckypray.dexkit.query.FindMethod
 import org.luckypray.dexkit.query.matchers.MethodMatcher
 import java.lang.reflect.Method
+import io.github.xiaotong6666.maihoku.MaiHokuLog as Log
 
 object DoubleClickDrawerHook : BaseHook() {
 

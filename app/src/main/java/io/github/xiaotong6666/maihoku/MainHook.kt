@@ -1,6 +1,5 @@
 package io.github.xiaotong6666.maihoku
 
-import android.util.Log
 import io.github.kyuubiran.ezxhelper.core.EzXReflection
 import io.github.libxposed.api.XposedModule
 import io.github.libxposed.api.XposedModuleInterface.ModuleLoadedParam
@@ -10,15 +9,31 @@ import io.github.xiaotong6666.maihoku.hook.DoubleClickDrawerHook
 import io.github.xiaotong6666.maihoku.hook.HookRuntime
 import io.github.xiaotong6666.maihoku.hook.ScreenRecorderHighFpsHook
 import io.github.xiaotong6666.maihoku.hook.telegram.TelegramHook
+import io.github.xiaotong6666.maihoku.mimessage.host.aosp.AospMessagingHook
+import io.github.xiaotong6666.maihoku.mimessage.host.google.GoogleMessagesHook
+import io.github.xiaotong6666.maihoku.mimessage.telephony.PrivilegedSimIdentityHook
+import io.github.xiaotong6666.maihoku.mimessage.ui.MessagingResources
+import io.github.xiaotong6666.maihoku.MaiHokuLog as Log
 
 const val SCREEN_RECORDER_PACKAGE = "com.miui.screenrecorder"
 const val TERMUX_PACKAGE = "com.termux"
+const val GOOGLE_MESSAGES_PACKAGE = "com.google.android.apps.messaging"
+const val AOSP_MESSAGING_PACKAGE = "com.android.messaging"
+const val MIUI_MESSAGES_PACKAGE = "com.android.mms"
+const val AOSP_PHONE_PACKAGE = "com.android.phone"
 private val TELEGRAM_PACKAGES = setOf(
     "org.telegram.messenger",
     "org.telegram.messenger.web",
 )
 
-private val targetPackages = setOf(SCREEN_RECORDER_PACKAGE, TERMUX_PACKAGE) + TELEGRAM_PACKAGES
+private val targetPackages = setOf(
+    SCREEN_RECORDER_PACKAGE,
+    TERMUX_PACKAGE,
+    GOOGLE_MESSAGES_PACKAGE,
+    AOSP_MESSAGING_PACKAGE,
+    MIUI_MESSAGES_PACKAGE,
+    AOSP_PHONE_PACKAGE,
+) + TELEGRAM_PACKAGES
 
 class MainHook : XposedModule() {
     private val initializedHooks = mutableSetOf<String>()
@@ -30,6 +45,7 @@ class MainHook : XposedModule() {
     override fun onPackageReady(param: PackageReadyParam) {
         if (param.packageName !in targetPackages) return
         EzXReflection.init(param.classLoader)
+        MessagingResources.initialize(moduleApplicationInfo)
 
         val runtime = HookRuntime(
             module = this,
@@ -41,6 +57,9 @@ class MainHook : XposedModule() {
         when (param.packageName) {
             SCREEN_RECORDER_PACKAGE -> initHooks(runtime, ScreenRecorderHighFpsHook)
             TERMUX_PACKAGE -> initHooks(runtime, DoubleClickDrawerHook)
+            GOOGLE_MESSAGES_PACKAGE -> initHooks(runtime, GoogleMessagesHook)
+            AOSP_MESSAGING_PACKAGE -> initHooks(runtime, AospMessagingHook)
+            MIUI_MESSAGES_PACKAGE, AOSP_PHONE_PACKAGE -> initHooks(runtime, PrivilegedSimIdentityHook)
             in TELEGRAM_PACKAGES -> initHooks(runtime, TelegramHook)
         }
     }

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Text is assigned from module resources after inflation: the inflater belongs to the host. -->
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:key="maihoku_xiaomi_sms_config_root">
+    <PreferenceCategory android:key="maihoku_xiaomi_protocol" android:order="1">
+        <Preference android:key="maihoku_xiaomi_service_channel" android:selectable="false" android:order="0" />
+        <Preference android:key="maihoku_xiaomi_auth_method" android:selectable="false" android:order="1" />
+    </PreferenceCategory>
+    <PreferenceCategory android:key="maihoku_xiaomi_account" android:order="2">
+        <Preference android:key="maihoku_xiaomi_sim1_status" android:selectable="false" android:order="0" />
+        <Preference android:key="maihoku_xiaomi_sim1_activate" android:order="1" />
+        <Preference android:key="maihoku_xiaomi_sim1_refresh_mixin_credentials" android:order="2" />
+        <Preference android:key="maihoku_xiaomi_sim1_passport" android:enabled="false" android:order="3" />
+        <Preference android:key="maihoku_xiaomi_push_status" android:selectable="false" android:order="4" />
+        <Preference android:key="maihoku_xiaomi_push_enabled" android:order="5" />
+        <Preference android:key="maihoku_xiaomi_push_start" android:enabled="false" android:order="6" />
+        <Preference android:key="maihoku_xiaomi_sim2_status" android:selectable="false" android:order="7" />
+        <Preference android:key="maihoku_xiaomi_sim2_activate" android:order="8" />
+        <Preference android:key="maihoku_xiaomi_sim2_refresh_mixin_credentials" android:order="9" />
+        <Preference android:key="maihoku_xiaomi_sim2_passport" android:enabled="false" android:order="10" />
+        <Preference android:key="maihoku_xiaomi_account_refresh" android:order="11" />
+    </PreferenceCategory>
+</PreferenceScreen>
