@@ -51,6 +51,7 @@ internal class MiMessageCoreService : Service() {
     private var inboxStore: MiMessageInboxStore? = null
     private var outgoingStore: MiMessageOutboxStore? = null
     private var cpuWakeLock: PowerManager.WakeLock? = null
+    private var foregroundStarted = false
     private var connectivityManager: ConnectivityManager? = null
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
     private val outgoingExecutor: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor { runnable ->
@@ -569,6 +570,7 @@ internal class MiMessageCoreService : Service() {
     }
 
     private fun startAsForeground() {
+        if (foregroundStarted) return
         val manager = getSystemService(NotificationManager::class.java)
         if (manager.getNotificationChannel(NOTIFICATION_CHANNEL) == null) {
             manager.createNotificationChannel(
@@ -579,13 +581,18 @@ internal class MiMessageCoreService : Service() {
                 ),
             )
         }
-        val notification = buildForegroundNotification(MiMessageRuntimeStatus.CONNECTING)
+        showForegroundNotification(pushClient?.state?.name ?: MiMessageRuntimeStatus.CONNECTING)
+        foregroundStarted = true
+        acquireCpuWakeLock()
+    }
+
+    private fun showForegroundNotification(state: String) {
+        val notification = buildForegroundNotification(state)
         if (Build.VERSION.SDK_INT >= 34) {
             startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_REMOTE_MESSAGING)
         } else {
             startForeground(NOTIFICATION_ID, notification)
         }
-        acquireCpuWakeLock()
     }
 
     private fun buildForegroundNotification(state: String): Notification {
@@ -614,8 +621,9 @@ internal class MiMessageCoreService : Service() {
 
     private fun updateForegroundNotification(state: String) {
         runCatching {
-            getSystemService(NotificationManager::class.java)
-                .notify(NOTIFICATION_ID, buildForegroundNotification(state))
+            // Update the notification owned by the foreground service itself. A regular
+            // notify() can race with startForeground() and leave its initial text visible.
+            showForegroundNotification(state)
         }.onFailure { error ->
             Log.w(TAG, "Could not update persistent Push notification: ${error.javaClass.simpleName}")
         }
