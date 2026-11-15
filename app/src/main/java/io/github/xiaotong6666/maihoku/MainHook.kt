@@ -4,15 +4,15 @@ import io.github.kyuubiran.ezxhelper.core.EzXReflection
 import io.github.libxposed.api.XposedModule
 import io.github.libxposed.api.XposedModuleInterface.ModuleLoadedParam
 import io.github.libxposed.api.XposedModuleInterface.PackageReadyParam
+import io.github.xiaotong6666.maihoku.features.mimessage.host.aosp.AospMessagingHook
+import io.github.xiaotong6666.maihoku.features.mimessage.host.google.GoogleMessagesHook
+import io.github.xiaotong6666.maihoku.features.mimessage.telephony.PrivilegedSimIdentityHook
+import io.github.xiaotong6666.maihoku.features.mimessage.ui.MessagingResources
+import io.github.xiaotong6666.maihoku.features.screenrecorder.ScreenRecorderHighFpsHook
+import io.github.xiaotong6666.maihoku.features.telegram.TelegramHook
+import io.github.xiaotong6666.maihoku.features.termux.DoubleClickDrawerHook
 import io.github.xiaotong6666.maihoku.hook.BaseHook
-import io.github.xiaotong6666.maihoku.hook.DoubleClickDrawerHook
 import io.github.xiaotong6666.maihoku.hook.HookRuntime
-import io.github.xiaotong6666.maihoku.hook.ScreenRecorderHighFpsHook
-import io.github.xiaotong6666.maihoku.hook.telegram.TelegramHook
-import io.github.xiaotong6666.maihoku.mimessage.host.aosp.AospMessagingHook
-import io.github.xiaotong6666.maihoku.mimessage.host.google.GoogleMessagesHook
-import io.github.xiaotong6666.maihoku.mimessage.telephony.PrivilegedSimIdentityHook
-import io.github.xiaotong6666.maihoku.mimessage.ui.MessagingResources
 import io.github.xiaotong6666.maihoku.MaiHokuLog as Log
 
 const val SCREEN_RECORDER_PACKAGE = "com.miui.screenrecorder"

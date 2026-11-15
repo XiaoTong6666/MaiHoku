@@ -25,22 +25,22 @@
             android:name="micloud-sdk"
             android:required="false" />
         <activity
-            android:name=".mimessage.ui.PassportCaptchaActivity"
+            android:name=".features.mimessage.ui.PassportCaptchaActivity"
             android:exported="false"
             android:theme="@android:style/Theme.Material.Light.NoActionBar"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".mimessage.ui.XiaomiSimActivationActivity"
+            android:name=".features.mimessage.ui.XiaomiSimActivationActivity"
             android:exported="false"
             android:theme="@android:style/Theme.Material.Light.NoActionBar"
             android:windowSoftInputMode="adjustResize" />
         <service
-            android:name=".mimessage.core.MiMessageCoreService"
+            android:name=".features.mimessage.core.MiMessageCoreService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="remoteMessaging" />
         <receiver
-            android:name=".mimessage.core.MiMessageBootReceiver"
+            android:name=".features.mimessage.core.MiMessageBootReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
@@ -51,7 +51,7 @@
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".mimessage.ipc.MiMessageInboxBridgeReceiver"
+            android:name=".features.mimessage.ipc.MiMessageInboxBridgeReceiver"
             android:enabled="true"
             android:exported="true"
             android:permission="android.permission.SEND_SMS">
@@ -64,7 +64,7 @@
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".mimessage.ipc.MiMessageAccountBridgeReceiver"
+            android:name=".features.mimessage.ipc.MiMessageAccountBridgeReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
@@ -72,7 +72,7 @@
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".mimessage.account.XiaomiActivationSmsSentReceiver"
+            android:name=".features.mimessage.account.XiaomiActivationSmsSentReceiver"
             android:enabled="true"
             android:exported="false" />
     </application>

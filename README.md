@@ -25,6 +25,32 @@ org.telegram.messenger
 org.telegram.messenger.web
 ```
 
+## 源码结构
+
+`app/src/main/java/io/github/xiaotong6666/maihoku/` 按功能边界组织源码：
+
+```text
+MainHook.kt               # Xposed 入口和目标包路由
+MaiHokuLog.kt             # 统一日志
+hook/                     # BaseHook、HookRuntime、HookDsl、HookRegistry、dexkit 公共机制
+features/
+  telegram/               # Telegram Hook、功能逻辑和 translation/
+  termux/                 # 双击打开侧边栏
+  screenrecorder/         # MIUI 高帧率录屏
+  mimessage/
+    core/                 # 核心服务和运行状态
+    account/              # SIM 身份、激活、Passport、Mixin
+    transport/            # Xiaomi Push、Slim、XML、编解码
+    presence/             # 联系人解析和在线状态
+    message/              # 收发、持久化、回执
+    ipc/                  # 跨 UID 通信和身份校验
+    host/common/          # 短信宿主通用桥接和设置
+    host/aosp/            # AOSP Messaging 适配
+    host/google/          # Google Messages 适配
+    telephony/            # 特权电话进程 Hook
+    ui/                   # 激活、CAPTCHA 和资源帮助类
+```
+
 ## Telegram API identity
 
 在项目根目录的 `local.properties` 中配置：
