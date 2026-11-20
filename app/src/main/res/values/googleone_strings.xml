@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="googleone_query_button">查询优惠</string>
+    <string name="googleone_query_button_description">MaiHoku 查询 Google Play 订阅优惠</string>
+    <string name="googleone_querying">正在查询 Google Play 优惠…</string>
+    <string name="googleone_purchase_callback">Play 购买回调：%1$d（以订阅页面为准）</string>
+    <string name="googleone_connection_failed">连接失败：%1$d %2$s</string>
+    <string name="googleone_connection_lost">Play Billing 连接断开，请重试</string>
+    <string name="googleone_init_failed">初始化失败：%1$s</string>
+    <string name="googleone_query_failed">查询失败：%1$d %2$s</string>
+    <string name="googleone_query_exception">查询异常：%1$s</string>
+    <string name="googleone_offer_free">免费首期</string>
+    <string name="googleone_offer_paid">付费</string>
+    <string name="googleone_offer_row">%1$s · %2$s · %3$s</string>
+    <string name="googleone_offers_title">Google One 优惠</string>
+    <string name="googleone_offers_count">Google One 优惠（%1$d）</string>
+    <string name="googleone_offers_empty">Play Billing 没有返回这些商品的可用优惠。这不代表账号一定符合任何试用资格。</string>
+    <string name="googleone_ok">确定</string>
+    <string name="googleone_close">关闭</string>
+    <string name="googleone_details_title">优惠详情</string>
+    <string name="googleone_product_line">商品：%1$s\n</string>
+    <string name="googleone_offer_id_line">优惠 ID：%1$s\n</string>
+    <string name="googleone_base_plan">基础方案</string>
+    <string name="googleone_plan_id_line">方案 ID：%1$s\n\n</string>
+    <string name="googleone_pricing_header">计费阶段：\n</string>
+    <string name="googleone_pricing_unavailable">没有计费阶段信息</string>
+    <string name="googleone_free_price">免费</string>
+    <string name="googleone_phase_cycles"> × %1$d</string>
+    <string name="googleone_phase_ongoing">（持续计费）</string>
+    <string name="googleone_phase_line">%1$d. %2$s / %3$s%4$s</string>
+    <string name="googleone_eligibility_notice">\n\n优惠出现在查询结果中不等于有资格购买。实际资格、地区、价格和续费条款以 Play 结算界面为准。</string>
+    <string name="googleone_back">返回</string>
+    <string name="googleone_checkout">前往 Play 结算</string>
+    <string name="googleone_confirm_title">请先确认账号和条款</string>
+    <string name="googleone_confirm_message">Play 当前结算账号可能与 Google One 界面账号不同。\n\n请在 Play 页面核对实际账号、免费期限、后续收费金额和续费日期。有些优惠即使未完成购买也可能在尝试后消失，是否仍要打开官方结算？</string>
+    <string name="googleone_cancel">取消</string>
+    <string name="googleone_open_checkout">打开官方结算</string>
+    <string name="googleone_checkout_failed">打开结算页失败：%1$d %2$s</string>
+    <string name="googleone_checkout_exception">打开结算页异常：%1$s</string>
+</resources>

@@ -5,6 +5,7 @@ MaiHoku 是一个基于 libxposed API 102 的 Android Xposed 模块，目前包�
 - **MIUI Screen Recorder**：根据设备支持的刷新率启用 120/144 FPS 录屏选项。
 - **Termux**：双击终端左侧边缘打开侧边栏。
 - **Google Messages / AOSP Messaging**：在原生设置页注入「小米网络短信」入口，支持 SIM 激活、账号验证、联系人在线状态和网络短信收发。Push 前台服务负责连接恢复、消息持久化和回执；宿主适配器复用短信 App 的原生收件、会话和发送状态流程。当前 Push 连接仅支持 SIM 1，不同宿主版本仍需分别验证兼容性。
+- **Google One**：查询 Google AI Ultra、Pro 等订阅优惠，查看免费期和续费价格，支持打开 Google Play 官方结算页。
 - **Telegram**：
   - 自定义 MTProto API identity。
   - 登录 / SMS 兼容处理。
@@ -23,6 +24,7 @@ com.android.mms
 com.android.phone
 org.telegram.messenger
 org.telegram.messenger.web
+com.google.android.apps.subscriptions.red
 ```
 
 ## 源码结构
@@ -37,6 +39,7 @@ features/
   telegram/               # Telegram Hook、功能逻辑和 translation/
   termux/                 # 双击打开侧边栏
   screenrecorder/         # MIUI 高帧率录屏
+  googleone/              # Google One 优惠查询和结算入口
   mimessage/
     core/                 # 核心服务和运行状态
     account/              # SIM 身份、激活、Passport、Mixin
@@ -50,6 +53,18 @@ features/
     telephony/            # 特权电话进程 Hook
     ui/                   # 激活、CAPTCHA 和资源帮助类
 ```
+
+## Google One 优惠查询
+
+此功能参考 google-ultra-main 的 Frida Billing 查询链，使用 MaiHoku 的 libxposed API 102 实现。
+
+在 Xposed 管理器中为 MaiHoku 勾选 Google One（`com.google.android.apps.subscriptions.red`）作为作用域，重启 Google One 后，点击右下角「查询优惠」即可查看当前 Google Play 返回的订阅优惠。
+
+- **查询范围**：Google AI Ultra、Google AI Pro 等方案，目前包含 `g1.play.20tb`、`g1.play.ai.pro`、`g1.30tb` 和 `g1.2tb.ai.subs_variant`。
+- **优惠详情**：列出每个商品返回的 Offer，显示免费首期、计费周期及后续续费价格；优先展示带免费首期的优惠。
+- **订阅方式**：选择优惠后可手动打开 Google Play 官方结算页，不会自动确认购买，也不需要 Frida 或电脑端脚本。
+
+优惠能否使用取决于 Google Play 账号及地区，实际价格和续费条款请以结算页面显示的内容为准。
 
 ## Telegram API identity
 

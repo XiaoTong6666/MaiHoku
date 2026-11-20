@@ -4,15 +4,16 @@ import io.github.kyuubiran.ezxhelper.core.EzXReflection
 import io.github.libxposed.api.XposedModule
 import io.github.libxposed.api.XposedModuleInterface.ModuleLoadedParam
 import io.github.libxposed.api.XposedModuleInterface.PackageReadyParam
+import io.github.xiaotong6666.maihoku.features.googleone.GoogleOneHook
 import io.github.xiaotong6666.maihoku.features.mimessage.host.aosp.AospMessagingHook
 import io.github.xiaotong6666.maihoku.features.mimessage.host.google.GoogleMessagesHook
 import io.github.xiaotong6666.maihoku.features.mimessage.telephony.PrivilegedSimIdentityHook
-import io.github.xiaotong6666.maihoku.features.mimessage.ui.MessagingResources
 import io.github.xiaotong6666.maihoku.features.screenrecorder.ScreenRecorderHighFpsHook
 import io.github.xiaotong6666.maihoku.features.telegram.TelegramHook
 import io.github.xiaotong6666.maihoku.features.termux.DoubleClickDrawerHook
 import io.github.xiaotong6666.maihoku.hook.BaseHook
 import io.github.xiaotong6666.maihoku.hook.HookRuntime
+import io.github.xiaotong6666.maihoku.hook.ModuleResources
 import io.github.xiaotong6666.maihoku.MaiHokuLog as Log
 
 const val SCREEN_RECORDER_PACKAGE = "com.miui.screenrecorder"
@@ -21,6 +22,7 @@ const val GOOGLE_MESSAGES_PACKAGE = "com.google.android.apps.messaging"
 const val AOSP_MESSAGING_PACKAGE = "com.android.messaging"
 const val MIUI_MESSAGES_PACKAGE = "com.android.mms"
 const val AOSP_PHONE_PACKAGE = "com.android.phone"
+const val GOOGLE_ONE_PACKAGE = "com.google.android.apps.subscriptions.red"
 private val TELEGRAM_PACKAGES = setOf(
     "org.telegram.messenger",
     "org.telegram.messenger.web",
@@ -33,6 +35,7 @@ private val targetPackages = setOf(
     AOSP_MESSAGING_PACKAGE,
     MIUI_MESSAGES_PACKAGE,
     AOSP_PHONE_PACKAGE,
+    GOOGLE_ONE_PACKAGE,
 ) + TELEGRAM_PACKAGES
 
 class MainHook : XposedModule() {
@@ -45,7 +48,7 @@ class MainHook : XposedModule() {
     override fun onPackageReady(param: PackageReadyParam) {
         if (param.packageName !in targetPackages) return
         EzXReflection.init(param.classLoader)
-        MessagingResources.initialize(moduleApplicationInfo)
+        ModuleResources.initialize(moduleApplicationInfo)
 
         val runtime = HookRuntime(
             module = this,
@@ -60,6 +63,7 @@ class MainHook : XposedModule() {
             GOOGLE_MESSAGES_PACKAGE -> initHooks(runtime, GoogleMessagesHook)
             AOSP_MESSAGING_PACKAGE -> initHooks(runtime, AospMessagingHook)
             MIUI_MESSAGES_PACKAGE, AOSP_PHONE_PACKAGE -> initHooks(runtime, PrivilegedSimIdentityHook)
+            GOOGLE_ONE_PACKAGE -> initHooks(runtime, GoogleOneHook)
             in TELEGRAM_PACKAGES -> initHooks(runtime, TelegramHook)
         }
     }

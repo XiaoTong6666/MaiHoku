@@ -2,43 +2,13 @@ package io.github.xiaotong6666.maihoku.features.mimessage.ui
 
 import android.app.PendingIntent
 import android.content.Context
-import android.content.pm.ApplicationInfo
-import android.content.res.Resources
 import android.os.Build
 import android.os.Bundle
-import io.github.xiaotong6666.maihoku.BuildConfig
+import io.github.xiaotong6666.maihoku.hook.ModuleResources
 
-/**
- * A hook's Context belongs to the SMS host, but R belongs to this module. Resolve strings from
- * the module APK with the page's configuration so numeric resource IDs cannot collide across apps.
- * Cache Resources rather than an Activity, and rebuild the cache when the configuration changes.
- */
+/** Compatibility shim for existing message-host callers. */
 internal object MessagingResources {
-    @Volatile private var moduleApplicationInfo: ApplicationInfo? = null
-
-    @Volatile private var cached: Resources? = null
-
-    fun initialize(applicationInfo: ApplicationInfo) {
-        moduleApplicationInfo = applicationInfo
-        cached = null
-    }
-
-    fun text(context: Context, id: Int, vararg arguments: Any): String {
-        if (context.packageName == BuildConfig.APPLICATION_ID) return context.getString(id, *arguments)
-        val configuration = context.resources.configuration
-        val moduleInfo = checkNotNull(moduleApplicationInfo) { "MaiHoku module resources were not initialized" }
-        // A hooked SMS host cannot necessarily query the Xposed module package under Android
-        // package-visibility rules. Passing ApplicationInfo directly avoids createPackageContext's
-        // package-name visibility check while still loading strings from the module APK.
-        val resources = cached?.takeIf { it.configuration == configuration } ?: context.packageManager
-            .getResourcesForApplication(moduleInfo)
-            .also {
-                @Suppress("DEPRECATION")
-                it.updateConfiguration(configuration, context.resources.displayMetrics)
-                cached = it
-            }
-        return resources.getString(id, *arguments)
-    }
+    fun text(context: Context, id: Int, vararg arguments: Any): String = ModuleResources.text(context, id, *arguments)
 }
 
 /** Pure policies return resource descriptions so each IPC consumer can render in its own locale. */

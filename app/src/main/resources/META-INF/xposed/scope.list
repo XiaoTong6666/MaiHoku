@@ -6,3 +6,4 @@ org.telegram.messenger
 org.telegram.messenger.web
 com.android.mms
 com.android.phone
+com.google.android.apps.subscriptions.red

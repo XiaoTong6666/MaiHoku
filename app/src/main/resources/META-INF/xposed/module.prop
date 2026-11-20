@@ -1,4 +1,4 @@
 minApiVersion=102
 targetApiVersion=102
 staticScope=true
-description=Google Messages and AOSP Messaging Xiaomi network messaging integration, Screen Recorder, Termux, and Telegram hooks
+description=Xiaomi network messaging, Google One offer inspector, Screen Recorder, Termux, and Telegram hooks
