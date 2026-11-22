@@ -125,13 +125,15 @@ jobs:
           ANDROID_DEBUG_KEYSTORE: ${{ secrets.ANDROID_DEBUG_KEYSTORE }}
         run: |
           set -euo pipefail
-          if [ -n "${ANDROID_DEBUG_KEYSTORE:-}" ]; then
-            mkdir -p ~/.android
-            echo "$ANDROID_DEBUG_KEYSTORE" | base64 --decode > ~/.android/debug.keystore
-            echo "Debug keystore restored."
-          else
-            echo "No ANDROID_DEBUG_KEYSTORE secret found. Gradle will use its default debug keystore."
+          if [ -z "${ANDROID_DEBUG_KEYSTORE:-}" ]; then
+            echo "::error::ANDROID_DEBUG_KEYSTORE is required to keep the APK signing certificate stable."
+            exit 1
           fi
+          mkdir -p "$HOME/.android"
+          printf '%s' "$ANDROID_DEBUG_KEYSTORE" | base64 --decode > "$HOME/.android/debug.keystore"
+          keytool -list -keystore "$HOME/.android/debug.keystore" -storepass android \
+            -alias androiddebugkey > /dev/null
+          echo "Restored and validated the fixed signing keystore."
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -157,6 +159,23 @@ jobs:
             echo "duration_seconds=${duration_seconds}"
             echo "duration_human=${duration_human}"
           } >> "$GITHUB_OUTPUT"
+
+      - name: Verify release APK signing certificate
+        run: |
+          set -euo pipefail
+          APK_SIGNER="$(find "$ANDROID_HOME/build-tools" -maxdepth 2 -name apksigner -type f | sort -V | tail -n 1)"
+          test -x "$APK_SIGNER"
+          EXPECTED_SHA="$(keytool -exportcert -keystore "$HOME/.android/debug.keystore" \
+            -storepass android -alias androiddebugkey | sha256sum | awk '{print $1}')"
+          ACTUAL_SHA="$("$APK_SIGNER" verify --print-certs \
+            app/build/outputs/apk/release/app-release.apk |
+            awk '/Signer #1 certificate SHA-256 digest:/ {print $NF; exit}')"
+          if [ -z "$ACTUAL_SHA" ] || [ "$EXPECTED_SHA" != "$ACTUAL_SHA" ]; then
+            echo "::error::Release APK was not signed by the restored keystore."
+            echo "Expected: $EXPECTED_SHA, actual: $ACTUAL_SHA"
+            exit 1
+          fi
+          echo "Release APK signer verified: $ACTUAL_SHA"
 
       - name: Collect APK metadata
         id: meta

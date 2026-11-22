@@ -1,4 +1,5 @@
 import java.util.Properties
+import java.io.File
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -61,10 +62,28 @@ android {
         buildConfig = true
     }
 
+    signingConfigs {
+        // CI restores a fixed key to $HOME/.android/debug.keystore.
+        // The default Android debug signer may resolve a different path.
+        val signingHome = System.getenv("HOME") ?: System.getProperty("user.home")
+        val restoredKeystore = File(signingHome, ".android/debug.keystore")
+        if (restoredKeystore.isFile) {
+            create("restoredDebugKey") {
+                storeFile = restoredKeystore
+                storePassword = "android"
+                keyAlias = "androiddebugkey"
+                keyPassword = "android"
+            }
+        }
+    }
+
     buildTypes {
+        getByName("debug") {
+            signingConfigs.findByName("restoredDebugKey")?.let { signingConfig = it }
+        }
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfigs.findByName("restoredDebugKey")?.let { signingConfig = it }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
