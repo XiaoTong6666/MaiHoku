@@ -50,3 +50,23 @@ jobs:
       release_sha256: ${{ needs.build.outputs.release_sha256 }}
       debug_sha256: ${{ needs.build.outputs.debug_sha256 }}
     secrets: inherit
+
+  xposed-release:
+    name: Sync Xposed community release
+    needs:
+      - build
+      - release
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    uses: ./.github/workflows/xposed-release.yml
+    with:
+      main_repo: XiaoTong6666/MaiHoku
+      target_repo: Xposed-Modules-Repo/io.github.xiaotong6666.maihoku
+      version_name: ${{ needs.build.outputs.version_name }}
+      version_code: ${{ needs.build.outputs.version_code }}
+      community_tag: ${{ needs.build.outputs.community_tag }}
+      commit_sha: ${{ needs.build.outputs.commit_sha }}
+      commit_full_sha: ${{ needs.build.outputs.commit_full_sha }}
+      build_duration: ${{ needs.build.outputs.build_duration }}
+      release_apk_name: ${{ needs.build.outputs.release_apk_name }}
+      release_sha256: ${{ needs.build.outputs.release_sha256 }}
+    secrets: inherit

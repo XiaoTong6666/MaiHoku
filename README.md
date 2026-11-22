@@ -126,6 +126,8 @@ Google Messages 与 AOSP/Lineage Messaging 使用各自的 DexKit 适配器。�
 
 - 推送到 `main`：自动构建并更新 `nightly` Release。
 - 推送 tag：发布对应正式 Release。
+- 推送到 `main` 且构建、`nightly` 发布成功后：将同一份正式 APK 同步到 [Xposed Module Repository](https://github.com/Xposed-Modules-Repo/io.github.xiaotong6666.maihoku)，版本标签为 `VersionCode-VersionName`。
+- 修改 `README*.md`：自动同步至 Xposed 模块仓库；`SUMMARY`、`SCOPE` 和 `SOURCE_URL` 等元数据由模块仓库独立维护。
 
 # Credits
 

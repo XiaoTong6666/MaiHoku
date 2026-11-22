@@ -1,0 +1,136 @@
+name: Xposed Release
+
+on:
+  workflow_call:
+    inputs:
+      main_repo:
+        required: true
+        type: string
+      target_repo:
+        required: true
+        type: string
+      version_name:
+        required: true
+        type: string
+      version_code:
+        required: true
+        type: string
+      community_tag:
+        required: true
+        type: string
+      commit_sha:
+        required: true
+        type: string
+      commit_full_sha:
+        required: true
+        type: string
+      build_duration:
+        required: true
+        type: string
+      release_apk_name:
+        required: true
+        type: string
+      release_sha256:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  xposed-release:
+    name: Sync Xposed community release
+    runs-on: ubuntu-24.04
+    concurrency:
+      group: maihoku-xposed-module-repo
+      cancel-in-progress: false
+
+    steps:
+      - name: Check cross-repository token
+        env:
+          XPOSED_REPO_TOKEN: ${{ secrets.XPOSED_REPO_TOKEN }}
+        run: |
+          if [ -z "${XPOSED_REPO_TOKEN:-}" ]; then
+            echo '::error::Configure XPOSED_REPO_TOKEN with write access to the Xposed module repository.'
+            exit 1
+          fi
+
+      - name: Checkout module repository
+        uses: actions/checkout@main
+        with:
+          repository: Xposed-Modules-Repo/io.github.xiaotong6666.maihoku
+          token: ${{ secrets.XPOSED_REPO_TOKEN }}
+          path: module-repo
+          persist-credentials: true
+
+      - name: Download APK files
+        uses: actions/download-artifact@main
+        with:
+          name: apk-files
+          path: dist/apks
+
+      - name: Download build metadata
+        uses: actions/download-artifact@main
+        with:
+          name: build-metadata
+          path: dist/metadata
+
+      - name: Publish module release
+        env:
+          GH_TOKEN: ${{ secrets.XPOSED_REPO_TOKEN }}
+          MAIN_REPO: ${{ inputs.main_repo }}
+          TARGET_REPO: ${{ inputs.target_repo }}
+          VERSION_NAME: ${{ inputs.version_name }}
+          VERSION_CODE: ${{ inputs.version_code }}
+          COMMUNITY_TAG: ${{ inputs.community_tag }}
+          COMMIT_SHA: ${{ inputs.commit_sha }}
+          COMMIT_FULL_SHA: ${{ inputs.commit_full_sha }}
+          BUILD_DURATION: ${{ inputs.build_duration }}
+          RELEASE_APK_NAME: ${{ inputs.release_apk_name }}
+          RELEASE_SHA256: ${{ inputs.release_sha256 }}
+        run: |
+          set -euo pipefail
+          RELEASE_APK="dist/apks/${RELEASE_APK_NAME}"
+          test -f "$RELEASE_APK"
+          echo "${RELEASE_SHA256}  ${RELEASE_APK}" | sha256sum --check --status
+
+          if ! git -C module-repo ls-remote --exit-code --tags origin "refs/tags/${COMMUNITY_TAG}" >/dev/null 2>&1; then
+            git -C module-repo config user.name 'github-actions[bot]'
+            git -C module-repo config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git -C module-repo commit --allow-empty -m "release: ${VERSION_NAME}"
+            git -C module-repo push origin HEAD:main
+            git -C module-repo tag "$COMMUNITY_TAG"
+            git -C module-repo push origin "refs/tags/${COMMUNITY_TAG}"
+          else
+            echo "Module tag ${COMMUNITY_TAG} already exists; keeping its original commit."
+          fi
+
+          {
+            echo "同步自 [MaiHoku 源码仓库](https://github.com/${MAIN_REPO}) 的构建产物喵"
+            echo
+            echo "- **Version:** \`${VERSION_NAME}\`"
+            echo "- **VersionCode:** \`${VERSION_CODE}\`"
+            echo "- **Commit:** [\`${COMMIT_SHA}\`](https://github.com/${MAIN_REPO}/commit/${COMMIT_FULL_SHA})"
+            echo "- **Build time:** \`${BUILD_DURATION}\`"
+            echo "- **SHA256:** \`${RELEASE_SHA256}\`"
+            echo
+            echo '## Message'
+            echo
+            echo '```text'
+            cat dist/metadata/commit-message.txt
+            echo '```'
+          } > module-release-notes.md
+
+          if gh release view "$COMMUNITY_TAG" --repo "$TARGET_REPO" >/dev/null 2>&1; then
+            EXISTING_DIGEST="$(gh api "repos/${TARGET_REPO}/releases/tags/${COMMUNITY_TAG}" \
+              --jq ".assets[] | select(.name == \"${RELEASE_APK_NAME}\") | .digest")"
+            if [ "$EXISTING_DIGEST" != "sha256:${RELEASE_SHA256}" ]; then
+              echo "::error::Module release ${COMMUNITY_TAG} has a missing or different APK; publish a new version instead."
+              exit 1
+            fi
+            gh release edit "$COMMUNITY_TAG" --repo "$TARGET_REPO" \
+              --title "$VERSION_NAME" --notes-file module-release-notes.md
+          else
+            gh release create "$COMMUNITY_TAG" "$RELEASE_APK" --repo "$TARGET_REPO" \
+              --title "$VERSION_NAME" --notes-file module-release-notes.md
+          fi

@@ -1,0 +1,56 @@
+name: Module README Sync
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'README*.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    name: Sync Xposed module documentation
+    runs-on: ubuntu-24.04
+    concurrency:
+      group: maihoku-xposed-module-repo
+      cancel-in-progress: false
+    steps:
+      - name: Check cross-repository token
+        env:
+          XPOSED_REPO_TOKEN: ${{ secrets.XPOSED_REPO_TOKEN }}
+        run: |
+          if [ -z "${XPOSED_REPO_TOKEN:-}" ]; then
+            echo '::error::Configure XPOSED_REPO_TOKEN with write access to the Xposed module repository.'
+            exit 1
+          fi
+
+      - name: Checkout source repository
+        uses: actions/checkout@main
+        with:
+          persist-credentials: false
+
+      - name: Checkout module repository
+        uses: actions/checkout@main
+        with:
+          repository: Xposed-Modules-Repo/io.github.xiaotong6666.maihoku
+          token: ${{ secrets.XPOSED_REPO_TOKEN }}
+          path: module-repo
+          persist-credentials: true
+
+      - name: Sync README files only if changed
+        run: |
+          set -euo pipefail
+          cp README*.md module-repo/
+          cd module-repo
+          git add -A -- 'README*.md'
+          if git diff --cached --quiet; then
+            echo 'README files are unchanged, skip push.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'docs: sync MaiHoku module documentation'
+          git push origin HEAD:main

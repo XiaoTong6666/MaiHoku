@@ -20,6 +20,8 @@ on:
         value: ${{ jobs.build.outputs.version_name }}
       version_code:
         value: ${{ jobs.build.outputs.version_code }}
+      community_tag:
+        value: ${{ jobs.build.outputs.community_tag }}
       commit_sha:
         value: ${{ jobs.build.outputs.commit_sha }}
       commit_full_sha:
@@ -52,6 +54,7 @@ jobs:
       debug_artifact_name: ${{ steps.meta.outputs.debug_artifact_name }}
       version_name: ${{ steps.meta.outputs.version_name }}
       version_code: ${{ steps.meta.outputs.version_code }}
+      community_tag: ${{ steps.meta.outputs.community_tag }}
       commit_sha: ${{ steps.meta.outputs.commit_sha }}
       commit_full_sha: ${{ steps.meta.outputs.commit_full_sha }}
       commit_url: ${{ steps.meta.outputs.commit_url }}
@@ -169,6 +172,7 @@ jobs:
 
           VERSION_CODE="$(git rev-list --count HEAD)"
           VERSION_NAME="1.${VERSION_CODE}"
+          COMMUNITY_TAG="${VERSION_CODE}-${VERSION_NAME}"
 
           COMMIT_SHA="$(git rev-parse --short HEAD)"
           COMMIT_FULL_SHA="$(git rev-parse HEAD)"
@@ -212,6 +216,7 @@ jobs:
             echo "debug_artifact_name=${DEBUG_ARTIFACT_NAME}"
             echo "version_name=${VERSION_NAME}"
             echo "version_code=${VERSION_CODE}"
+            echo "community_tag=${COMMUNITY_TAG}"
             echo "commit_sha=${COMMIT_SHA}"
             echo "commit_full_sha=${COMMIT_FULL_SHA}"
             echo "commit_url=${COMMIT_URL}"
