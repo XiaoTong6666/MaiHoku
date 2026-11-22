@@ -167,9 +167,12 @@ jobs:
           test -x "$APK_SIGNER"
           EXPECTED_SHA="$(keytool -exportcert -keystore "$HOME/.android/debug.keystore" \
             -storepass android -alias androiddebugkey | sha256sum | awk '{print $1}')"
-          ACTUAL_SHA="$("$APK_SIGNER" verify --print-certs \
-            app/build/outputs/apk/release/app-release.apk |
-            awk '/Signer #1 certificate SHA-256 digest:/ {print $NF; exit}')"
+          SIGNING_REPORT="$("$APK_SIGNER" verify --verbose --print-certs \
+            app/build/outputs/apk/release/app-release.apk 2>&1)"
+          printf '%s\n' "$SIGNING_REPORT"
+          ACTUAL_SHA="$(printf '%s\n' "$SIGNING_REPORT" |
+            grep -Ei 'certificate.*(SHA-256|SHA256)' |
+            grep -Eoi '[0-9a-f]{64}' | head -n 1 || true)"
           if [ -z "$ACTUAL_SHA" ] || [ "$EXPECTED_SHA" != "$ACTUAL_SHA" ]; then
             echo "::error::Release APK was not signed by the restored keystore."
             echo "Expected: $EXPECTED_SHA, actual: $ACTUAL_SHA"
