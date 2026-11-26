@@ -5,7 +5,7 @@ MaiHoku 是一个基于 libxposed API 102 的 Android Xposed 模块，目前包�
 - **MIUI Screen Recorder**：根据设备支持的刷新率启用 120/144 FPS 录屏选项。
 - **Termux**：双击终端左侧边缘打开侧边栏。
 - **Google Messages / AOSP Messaging**：在原生设置页注入「小米网络短信」入口，支持 SIM 激活、账号验证、联系人在线状态和网络短信收发。Push 前台服务负责连接恢复、消息持久化和回执；宿主适配器复用短信 App 的原生收件、会话和发送状态流程。当前 Push 连接仅支持 SIM 1，不同宿主版本仍需分别验证兼容性。
-- **Google One**：查询 Google AI Ultra、Pro 等订阅优惠，查看免费期和续费价格，支持打开 Google Play 官方结算页。
+- **Google One**：扫描订阅优惠、筛选免费首期、缓存已发现的 SKU，并通过 Google Play 结算或管理订阅。
 - **Wi-Fi 高级连接**：在 Android Settings 原生 Wi-Fi 连接/修改对话框中选择 WPA2-PSK、WPA3-SAE、WPA2/WPA3 过渡、Open/OWE，并配置 PMF、BSSID、SAE H2E。原生高级选项中的隐藏 SSID、MAC 随机化、IP/DNS、代理和密码及连接/保存流程不变。
 - **Telegram**：
   - 自定义 MTProto API identity。
@@ -42,7 +42,10 @@ features/
   telegram/               # Telegram Hook、功能逻辑和 translation/
   termux/                 # 双击打开侧边栏
   screenrecorder/         # MIUI 高帧率录屏
-  googleone/              # Google One 优惠查询和结算入口
+  googleone/              # Google One Hook 和查询界面
+    catalog/              # SKU 预设、公开记录与候选生成
+    query/                # 查询报告与本地命中缓存
+    billing/              # 价格、订阅状态与替换策略
   wifi/                   # Settings 原生 Wi-Fi 高级连接
     core/                 # 原生配置读取与显式字段修改
     policy/               # 安全策略、身份与提交验证
@@ -64,17 +67,18 @@ features/
     ui/                   # 激活、CAPTCHA 和资源帮助类
 ```
 
-## Google One 优惠查询
+## Google One 优惠查询与订阅
 
-此功能参考 google-ultra-main 的 Frida Billing 查询链，使用 MaiHoku 的 libxposed API 102 实现。
+在 **Xposed 管理器**中为 MaiHoku 勾选 Google One（`com.google.android.apps.subscriptions.red`）作为作用域，重启 Google One 后，点击应用内的「查询优惠」入口。通过 Google Play Billing 直接查询订阅商品与优惠，无需 Frida 或电脑端脚本。
 
-在 Xposed 管理器中为 MaiHoku 勾选 Google One（`com.google.android.apps.subscriptions.red`）作为作用域，重启 Google One 后，点击右下角「查询优惠」即可查看当前 Google Play 返回的订阅优惠。
+- **多种查询方式**：内置 12 个常用 SKU，支持输入指定 SKU、查询付费折扣预设，以及扫描 GitHub 公开记录的商品。也可选择免费试用、折扣价或全部候选，一次启动后自动分批查询，无需手动逐页输入。
+- **自动扫描**：显示已查询的 SKU、返回商品数与 Offer 数；支持随时停止。查询采用有限并发，遇到临时错误会重试并降低并发，已取得的结果仍可通过报告查看。候选 SKU 只是待查询的名称，不代表商品一定存在。
+- **优惠筛选与详情**：按免费首期、付费首期或商品 ID 筛选并分页浏览。每个 Offer 都可查看所属 SKU、Base Plan、Offer ID、各计费阶段的价格和周期，以及免费期结束后的续费价格。
+- **本地命中缓存**：保留曾查询成功的 SKU、Offer 数量及首期免费／付费分类，支持筛选、搜索、逐项或批量重新查询、清空缓存。缓存仅作历史参考，不保存购买 Token 或 Offer Token，也不会替代结算前的实时查询。
+- **订阅与结算**：选择优惠后可打开 Google Play 官方结算页。支持对已关闭自动续订的同 SKU 重新订阅，以及选择现有订阅执行 5 种 Play Billing 替换模式。打开结算前会重新核对优惠和相关订单；条款有变化时再次提示确认。
+- **订阅状态与诊断**：只读查看当前订阅商品、订单状态、自动续订和确认情况，并比较前后两次查询的变化；提供每批响应、失败或未返回商品等统计，可复制或分享不含敏感 Token 的 JSON 报告。
 
-- **查询范围**：Google AI Ultra、Google AI Pro 等方案，目前包含 `g1.play.20tb`、`g1.play.ai.pro`、`g1.30tb` 和 `g1.2tb.ai.subs_variant`。
-- **优惠详情**：列出每个商品返回的 Offer，显示免费首期、计费周期及后续续费价格；优先展示带免费首期的优惠。
-- **订阅方式**：选择优惠后可手动打开 Google Play 官方结算页，不会自动确认购买，也不需要 Frida 或电脑端脚本。
-
-优惠能否使用取决于 Google Play 账号及地区，实际价格和续费条款请以结算页面显示的内容为准。
+所有购买都需要用户在 Google Play 确认。能查询到优惠不代表账号一定符合领取条件；实际费用、续费时间与订阅资格以 Google Play 显示的信息为准。
 
 ## Telegram API identity
 

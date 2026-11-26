@@ -21,6 +21,8 @@ internal object ModuleResources {
 
     fun text(context: Context, id: Int, vararg arguments: Any): String = forContext(context).getString(id, *arguments)
 
+    fun quantityText(context: Context, id: Int, quantity: Int, vararg arguments: Any): String = forContext(context).getQuantityString(id, quantity, *arguments)
+
     fun stringArray(context: Context, id: Int): Array<String> = forContext(context).getStringArray(id)
 
     private fun forContext(context: Context): Resources {

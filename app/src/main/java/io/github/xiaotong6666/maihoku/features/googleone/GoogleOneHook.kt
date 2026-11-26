@@ -14,10 +14,7 @@ import io.github.xiaotong6666.maihoku.hook.ModuleResources
 import java.util.WeakHashMap
 import io.github.xiaotong6666.maihoku.MaiHokuLog as Log
 
-/**
- * The host Activity provides the billing package identity, but no Google One
- * private methods are replaced. The button is installed only in its own scope.
- */
+/** Adds the offer button within Google One. */
 object GoogleOneHook : BaseHook() {
     override val name = "GoogleOneHook"
 
@@ -70,7 +67,7 @@ object GoogleOneHook : BaseHook() {
             setOnClickListener {
                 if (activity.isFinishing || activity.isDestroyed) return@setOnClickListener
                 val session = sessions.getOrPut(activity) { GoogleOneBillingSession(activity) }
-                session.query()
+                session.showMenu()
             }
         }
         val layout = FrameLayout.LayoutParams(
