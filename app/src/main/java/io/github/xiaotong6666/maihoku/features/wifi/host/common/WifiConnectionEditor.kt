@@ -1,6 +1,9 @@
 package io.github.xiaotong6666.maihoku.features.wifi.host.common
 
 import android.net.wifi.WifiConfiguration
+import android.os.Build
+import android.os.Parcel
+import android.os.Parcelable
 import io.github.xiaotong6666.maihoku.R
 import io.github.xiaotong6666.maihoku.features.wifi.core.WifiConfigurationOverride
 import io.github.xiaotong6666.maihoku.features.wifi.core.WifiEditDetection
@@ -77,7 +80,20 @@ internal fun applyOptions(state: Controls, config: WifiConfiguration): EditedCon
         }
     }
     // Modify a copy. If validation/reflection fails, the original host result is untouched.
-    val modified = WifiConfiguration(config)
+    val modified = if (Build.VERSION.SDK_INT >= 30) {
+        WifiConfiguration(config)
+    } else {
+        val parcel = Parcel.obtain()
+        try {
+            config.writeToParcel(parcel, 0)
+            parcel.setDataPosition(0)
+            @Suppress("UNCHECKED_CAST")
+            val creator = WifiConfiguration::class.java.getField("CREATOR").get(null) as Parcelable.Creator<WifiConfiguration>
+            creator.createFromParcel(parcel)
+        } finally {
+            parcel.recycle()
+        }
+    }
     if (securityChanged) WifiConfigurationOverride.applySecurity(modified, mode)
     if (suppliedPassword.isNotEmpty()) {
         val isRawPsk = mode == WifiSecurityMode.WPA2 && suppliedPassword.matches(Regex("^[0-9a-fA-F]{64}$"))

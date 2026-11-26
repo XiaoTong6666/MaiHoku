@@ -106,7 +106,11 @@ internal object WifiConfigurationOverride {
     }
 
     fun applyMacRandomization(config: WifiConfiguration, setting: Int) {
-        config.macRandomizationSetting = setting
+        if (android.os.Build.VERSION.SDK_INT >= 33) {
+            config.macRandomizationSetting = setting
+        } else {
+            throw UnsupportedOperationException("MAC randomization configuration requires API 33")
+        }
     }
 
     /** Invoked only by the system_server hook for SSIDs explicitly pinned to WPA2 / Open. */

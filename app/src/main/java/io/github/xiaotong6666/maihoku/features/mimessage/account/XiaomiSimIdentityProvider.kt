@@ -62,6 +62,7 @@ internal object XiaomiSimIdentityProvider {
         return resolve(context, slotIndex, targetClassLoader)
     }
 
+    @android.annotation.SuppressLint("MissingPermission")
     fun resolve(context: Context, slotIndex: Int, targetClassLoader: ClassLoader? = null): XiaomiSimIdentity {
         require(slotIndex in 0..1) { "Only physical SIM slots 0 and 1 are supported" }
         val hasReadPhoneState = context.checkSelfPermission(Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED
@@ -123,7 +124,18 @@ internal object XiaomiSimIdentityProvider {
             ?: throw XiaomiActivationException("SIM_ICCID_UNAVAILABLE", "Activation SIM hash requires the raw ICCID")
         val mccMnc = runCatching { telephony.simOperator?.takeIf { it.matches(Regex("\\d{5,6}")) } }
             .getOrNull()
-            ?: (subscription.mccString.orEmpty() + subscription.mncString.orEmpty())
+            ?: (
+                if (android.os.Build.VERSION.SDK_INT >= 29) {
+                    subscription.mccString.orEmpty() + subscription.mncString.orEmpty()
+                } else {
+                    @Suppress("DEPRECATION")
+                    val mcc = subscription.mcc
+
+                    @Suppress("DEPRECATION")
+                    val mnc = subscription.mnc
+                    "$mcc" + "$mnc".padStart(2, '0')
+                }
+                )
                 .takeIf { it.matches(Regex("\\d{5,6}")) }
             ?: throw XiaomiActivationException("SIM_MCC_MNC_UNAVAILABLE", "Could not read SIM MCC/MNC")
 

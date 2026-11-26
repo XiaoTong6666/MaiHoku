@@ -440,6 +440,7 @@ internal object XiaomiAccountSdkDeviceIdProvider {
     }
 
     @Suppress("DEPRECATION")
+    @android.annotation.SuppressLint("MissingPermission")
     fun resolve(context: Context): String? = runCatching {
         val telephony = context.applicationContext.getSystemService(Context.TELEPHONY_SERVICE) as? TelephonyManager
             ?: return null

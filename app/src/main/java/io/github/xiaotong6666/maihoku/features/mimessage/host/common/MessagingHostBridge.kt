@@ -129,6 +129,7 @@ internal object MessagingHostBridge {
                 appContext.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED)
             } else {
                 @Suppress("DEPRECATION")
+                @android.annotation.SuppressLint("UnspecifiedRegisterReceiverFlag")
                 appContext.registerReceiver(receiver, filter)
             }
         } catch (error: Throwable) {

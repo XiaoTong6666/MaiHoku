@@ -500,6 +500,7 @@ class XiaomiSimActivationActivity : Activity() {
             registerReceiver(smsResultReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
         } else {
             @Suppress("DEPRECATION")
+            @android.annotation.SuppressLint("UnspecifiedRegisterReceiverFlag")
             registerReceiver(smsResultReceiver, filter)
         }
         receiverRegistered = true

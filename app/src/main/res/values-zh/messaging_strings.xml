@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mx_send_context_missing">Mi Message 发送上下文未能识别，已阻止运营商短信回退</string>
+    <string name="mx_send_page_unavailable">短信发送界面当前不可用</string>
+    <string name="mx_send_recipient_unavailable">对方当前不在线或不支持 Mi Message，请切换 SMS</string>
+    <string name="mx_send_record_unavailable">本地消息记录未就绪，未发送网络短信</string>
+    <string name="mx_send_adapter_unavailable">Mi Message 发信适配器尚未准备好，请稍后重试</string>
+    <string name="mx_send_single_recipient">Mi Message 目前只支持单人会话，请检查收件人和正文</string>
+    <string name="mx_send_queue_failed_draft">Mi Message 未能加入发送队列，草稿已保留</string>
+    <string name="mx_send_queue_failed">Mi Message 未能加入发送队列</string>
+    <string name="mx_send_queued">Mi Message 已加入发送队列</string>
+    <string name="mx_send_sent">Mi Message 已发送</string>
+    <string name="mx_send_delivered">Mi Message 已送达</string>
+    <string name="mx_send_failed">Mi Message 发送失败：%1$s</string>
+    <string name="mx_send_failed_hint">请检查网络和联系人状态</string>
+    <string name="mx_send_unconfirmed">Mi Message 发送状态未确认，请先不要重复发送</string>
+    <string name="mx_compose_switch">切换 Mi Message 或 SMS</string>
+    <string name="mx_compose_switch_sms">当前使用 Mi Message，点击切换到 SMS</string>
+    <string name="mx_compose_switch_network">当前使用 SMS，点击切换到 Mi Message</string>
+    <string name="mx_notification_title">MaiHoku · 小米网络短信</string>
+    <string name="mx_notification_bound">在线 · Xiaomi Push ChID=3 已连接</string>
+    <string name="mx_notification_reconnecting">网络中断 · 正在自动重连</string>
+    <string name="mx_notification_connecting">正在建立小米网络短信长连接</string>
+    <string name="mx_notification_failed">连接失败 · 请检查账号和 SIM 状态</string>
+    <string name="mx_notification_running">网络短信后台服务运行中 · %1$s</string>
+    <string name="mx_sim_status">SIM %1$d 状态</string>
+    <string name="mx_sim_activate">首次激活 SIM %1$d</string>
+    <string name="mx_sim_credentials">获取 / 刷新 SIM %1$d Mixin 凭据</string>
+    <string name="mx_sim_passport">继续 SIM %1$d Passport 验证</string>
+    <string name="mx_title">小米网络短信</string>
+    <string name="mx_settings_title">小米短信设置</string>
+    <string name="mx_entry_summary">SIM 激活、Passport 验证与 Mixin 服务配置</string>
+    <string name="mx_sim_title">SIM %1$d</string>
+    <string name="mx_account_status">账号状态</string>
+    <string name="mx_status_loading">正在读取 MaiHoku 私有存储…</string>
+    <string name="mx_activate">开始 SIM 激活</string>
+    <string name="mx_activate_summary">读取本机 SIM 信息，确认发送一次小米激活短信，然后完成 Passport / STS。短信可能产生运营商费用。</string>
+    <string name="mx_refresh_credentials">获取 / 刷新 Mixin 凭据</string>
+    <string name="mx_refresh_credentials_summary">使用已激活的 SIM 账号获取网络短信凭据，不发送短信</string>
+    <string name="mx_passport_continue">继续 Passport 验证</string>
+    <string name="mx_passport_summary">仅在小米服务器要求交互验证时使用</string>
+    <string name="mx_push_status">Push 连接状态</string>
+    <string name="mx_push_loading">正在读取 ChID=3 运行状态…</string>
+    <string name="mx_feature">网络短信功能</string>
+    <string name="mx_feature_loading">正在读取功能开关…</string>
+    <string name="mx_reconnect">重新连接 Push</string>
+    <string name="mx_reconnect_summary">使用已保存的 Mixin 凭据重新建立 ChID=3 连接；不会发送短信</string>
+    <string name="mx_refresh_status">刷新账号状态</string>
+    <string name="mx_refresh_status_summary">重新读取 SIM 1 / SIM 2 的激活和网络短信状态</string>
+    <string name="mx_activation_opening">正在准备 SIM 激活流程…</string>
+    <string name="mx_passport_opening">正在打开 Passport 验证页面…</string>
+    <string name="mx_push_preparing">正在准备 ChID=3 网络短信连接…</string>
+    <string name="mx_status_failed">无法读取 MaiHoku 状态：%1$s</string>
+    <string name="mx_action_failed">网络短信操作失败：%1$s</string>
+    <string name="mx_page_failed">无法打开网络短信页面：%1$s</string>
+    <string name="mx_bridge_failed">无法连接 MaiHoku 账号服务：%1$s</string>
+    <string name="mx_credentials_loading">正在请求 Passport / STS，不会重新发送激活短信…</string>
+    <string name="mx_credentials_saved">SIM 已激活，网络短信凭据已保存。</string>
+    <string name="mx_verification_required">小米服务器要求 Passport 交互验证，请继续完成验证。</string>
+    <string name="mx_credentials_failed">获取网络短信凭据失败：%1$s。SIM 激活账号已保留。</string>
+    <string name="mx_identity_unavailable">当前 SIM 身份尚未核验；等待特权电话进程提供新快照。</string>
+    <string name="mx_identity_mismatch">当前 SIM 与已保存的激活身份不匹配；旧凭据不会用于当前 SIM。</string>
+    <string name="mx_identity_ready">当前 SIM 身份匹配 · 账号已激活 · 网络短信凭据已就绪。</string>
+    <string name="mx_identity_challenge">当前 SIM 身份匹配 · 账号已激活 · Passport 验证待完成。</string>
+    <string name="mx_identity_activated">当前 SIM 身份匹配 · 账号已激活 · 网络短信凭据尚未就绪，可以重试。</string>
+    <string name="mx_identity_not_activated">当前 SIM 身份已核验 · 尚未激活。首次激活需要确认发送短信。</string>
+    <string name="mx_feature_enabled">网络短信功能已启用</string>
+    <string name="mx_feature_disabled">网络短信功能已停用</string>
+    <string name="mx_connection_summary">%1$s · %2$s</string>
+    <string name="mx_connection_bound">Push 已连接，ChID=3 BIND 成功</string>
+    <string name="mx_connection_connecting">正在连接 Xiaomi Push</string>
+    <string name="mx_connection_authenticating">TCP 已连接，正在认证</string>
+    <string name="mx_connection_binding">正在建立 ChID=3 业务通道</string>
+    <string name="mx_connection_reconnecting">连接中断，正在自动重连</string>
+    <string name="mx_connection_failed">Push 连接失败，自动连接已停止</string>
+    <string name="mx_connection_sim_changed">检测到 SIM 身份变化，旧连接已停止</string>
+    <string name="mx_connection_sim_unavailable">当前 SIM 无法核验，连接已停止</string>
+    <string name="mx_connection_closed">Push 连接已关闭</string>
+    <string name="mx_connection_disconnected">Push 尚未连接</string>
+    <string name="mx_toggle_disable">已启用 · 点击停用网络短信</string>
+    <string name="mx_toggle_enable">已停用 · 点击启用网络短信</string>
+    <string name="mx_protocol_title">协议参数</string>
+    <string name="mx_protocol_auth">认证方式</string>
+    <string name="mx_account_title">SIM 激活与账号</string>
+</resources>

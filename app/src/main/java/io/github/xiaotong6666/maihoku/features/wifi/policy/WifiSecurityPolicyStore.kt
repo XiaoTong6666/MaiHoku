@@ -202,7 +202,9 @@ internal object WifiSecurityPolicyStore {
     fun canonicalKey(configs: List<WifiConfiguration>): String? = WifiProfileRows.canonicalKey(identities(configs))
 
     /** Never call WifiManager from inside the service hook. */
+    @android.annotation.SuppressLint("MissingPermission")
     fun readSavedNetworks(context: Context): List<WifiConfiguration>? = runCatching {
+        // Uses the host app's permissions; denied access returns null.
         val wifi = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         @Suppress("DEPRECATION")
         wifi.configuredNetworks?.filter { it.networkId >= 0 }
