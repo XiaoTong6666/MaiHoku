@@ -95,6 +95,11 @@
     <string name="googleone_replace_subscription">Replace an existing subscription…</string>
     <string name="googleone_subscription_actions">More subscription actions…</string>
     <string name="googleone_resubscribe">Resume / resubscribe (same SKU)</string>
+    <string name="googleone_try_extend_subscription">Try extending subscription time</string>
+    <string name="googleone_time_extension_unavailable">No active auto-renewing subscription found for %1$s. This shortcut only attempts same-SKU time extension. Use Replace an existing subscription for other products, or check your subscription in Play.</string>
+    <string name="googleone_time_extension_choose">Choose a subscription to try extending</string>
+    <string name="googleone_time_extension_confirm_title">Confirm time extension attempt</string>
+    <string name="googleone_time_extension_confirm">Current subscription: %1$s\nTarget product: %2$s\nTarget offer: %3$s\nReplacement mode: CHARGE_FULL_PRICE (5)\n\nPricing phases:\n%4$s\n\nThis tries to replace your subscription immediately and may cause a charge or change your next billing date. Free trial time is NOT guaranteed to stack.\n\nNote the current next payment date in Play first. Check the account, price and terms on the official checkout screen, then compare the date in Play afterward. Continue?</string>
     <string name="googleone_resubscribe_unavailable">No canceled subscription found for %1$s. Use the same SKU or check Play.</string>
     <string name="googleone_resubscribe_confirm_title">Confirm resubscription attempt</string>
     <string name="googleone_resubscribe_confirm">Product: %1$s\n\nPricing:\n%2$s\n\nMay restart auto-renewal or charge. No trial guarantee. Verify account and price in Play. Continue?</string>

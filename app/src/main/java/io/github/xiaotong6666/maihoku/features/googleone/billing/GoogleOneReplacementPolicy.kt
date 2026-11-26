@@ -19,4 +19,7 @@ internal object GoogleOneReplacementPolicy {
         previous.isAutoRenewing == current.isAutoRenewing
 
     fun isCanceledMatchingProduct(purchase: Purchase, sku: String): Boolean = isReplaceable(purchase) && !purchase.isAutoRenewing && sku in purchase.products
+
+    /** The time-extension shortcut only applies to an auto-renewing subscription of the same product. */
+    fun isTimeExtensionCandidate(purchase: Purchase, sku: String): Boolean = isReplaceable(purchase) && purchase.isAutoRenewing && sku in purchase.products
 }

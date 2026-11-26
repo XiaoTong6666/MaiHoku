@@ -865,6 +865,7 @@ internal class GoogleOneBillingSession(activity: Activity) {
         val actions = arrayOf(
             text(activity, R.string.googleone_resubscribe),
             text(activity, R.string.googleone_replace_subscription),
+            text(activity, R.string.googleone_try_extend_subscription),
         )
         AlertDialog.Builder(activity)
             .setTitle(text(activity, R.string.googleone_subscription_actions))
@@ -872,6 +873,7 @@ internal class GoogleOneBillingSession(activity: Activity) {
                 when (index) {
                     0 -> queryResubscription(id, offer)
                     1 -> queryReplaceableSubscriptions(id, offer)
+                    2 -> queryTimeExtensionCandidates(id, offer)
                 }
             }
             .setNegativeButton(text(activity, R.string.googleone_cancel), null)
@@ -958,6 +960,69 @@ internal class GoogleOneBillingSession(activity: Activity) {
             val candidates = purchases.filter(GoogleOneReplacementPolicy::isReplaceable)
             onActivity(id) { activity -> showReplacementCandidates(activity, id, offer, candidates) }
         }
+    }
+
+    /** Same-SKU replacement with CHARGE_FULL_PRICE; Play alone determines the resulting entitlement. */
+    private fun queryTimeExtensionCandidates(id: Int, offer: AvailableOffer) {
+        if (!isCurrent(id)) return
+        val billing = client ?: return
+        notice(R.string.googleone_querying_subscriptions)
+        fetchPurchases(billing, id) { purchases ->
+            captureSubscriptionBaseline(purchases)
+            val candidates = purchases.filter {
+                GoogleOneReplacementPolicy.isTimeExtensionCandidate(it, offer.product.productId)
+            }
+            onActivity(id) { activity -> showTimeExtensionCandidates(activity, id, offer, candidates) }
+        }
+    }
+
+    private fun showTimeExtensionCandidates(
+        activity: Activity,
+        id: Int,
+        offer: AvailableOffer,
+        candidates: List<Purchase>,
+    ) {
+        if (candidates.isEmpty()) {
+            AlertDialog.Builder(activity)
+                .setTitle(text(activity, R.string.googleone_try_extend_subscription))
+                .setMessage(text(activity, R.string.googleone_time_extension_unavailable, offer.product.productId))
+                .setNegativeButton(text(activity, R.string.googleone_cancel), null)
+                .setPositiveButton(text(activity, R.string.googleone_menu_play_subscriptions)) { _, _ ->
+                    openPlaySubscriptions(activity)
+                }
+                .show()
+            return
+        }
+        AlertDialog.Builder(activity)
+            .setTitle(text(activity, R.string.googleone_time_extension_choose))
+            .setItems(candidates.map { it.products.joinToString(", ") }.toTypedArray()) { _, index ->
+                val oldPurchase = candidates[index]
+                AlertDialog.Builder(activity)
+                    .setTitle(text(activity, R.string.googleone_time_extension_confirm_title))
+                    .setMessage(
+                        text(
+                            activity,
+                            R.string.googleone_time_extension_confirm,
+                            oldPurchase.products.joinToString(", "),
+                            offer.product.productId,
+                            offer.details.offerId ?: offer.details.basePlanId,
+                            describePhases(activity, offer.phases),
+                        ),
+                    )
+                    .setNegativeButton(text(activity, R.string.googleone_cancel), null)
+                    .setPositiveButton(text(activity, R.string.googleone_open_checkout)) { _, _ ->
+                        recheckAndLaunchReplacement(
+                            id,
+                            offer,
+                            oldPurchase,
+                            BillingFlowParams.ProrationMode.IMMEDIATE_AND_CHARGE_FULL_PRICE,
+                            requireTimeExtensionCandidate = true,
+                        )
+                    }
+                    .show()
+            }
+            .setNegativeButton(text(activity, R.string.googleone_cancel), null)
+            .show()
     }
 
     private fun showSubscriptionStatus() {
@@ -1155,19 +1220,24 @@ internal class GoogleOneBillingSession(activity: Activity) {
         offer: AvailableOffer,
         previous: Purchase,
         replacementMode: Int,
+        requireTimeExtensionCandidate: Boolean = false,
     ) {
         if (!isCurrent(id)) return
         val billing = client ?: return
         notice(R.string.googleone_rechecking_subscription)
         fetchPurchases(billing, id) { purchases ->
             val fresh = purchases.firstOrNull { current ->
-                GoogleOneReplacementPolicy.isSameActiveSubscription(previous, current)
+                GoogleOneReplacementPolicy.isSameActiveSubscription(previous, current) &&
+                    (
+                        !requireTimeExtensionCandidate ||
+                            GoogleOneReplacementPolicy.isTimeExtensionCandidate(current, offer.product.productId)
+                        )
             }
             if (fresh == null) {
                 failure(id, R.string.googleone_subscription_changed)
                 return@fetchPurchases
             }
-            onActivity(id) { launchOfficialBilling(it, id, offer, fresh, replacementMode) }
+            onActivity(id) { launchOfficialBilling(it, id, offer, fresh, replacementMode, requireTimeExtensionCandidate) }
         }
     }
 
@@ -1177,6 +1247,7 @@ internal class GoogleOneBillingSession(activity: Activity) {
         offer: AvailableOffer,
         oldPurchase: Purchase? = null,
         replacementMode: Int = BillingFlowParams.ProrationMode.IMMEDIATE_AND_CHARGE_FULL_PRICE,
+        requireTimeExtensionCandidate: Boolean = false,
     ) {
         if (!isCurrent(id) || activity.isFinishing || activity.isDestroyed) return
         val billing = client ?: return
@@ -1211,7 +1282,7 @@ internal class GoogleOneBillingSession(activity: Activity) {
                     val refreshed = offerFrom(product, matched)
                     onActivity(id) { currentActivity ->
                         if (offer.hasSameTerms(refreshed)) {
-                            launchWithCurrentOffer(currentActivity, id, refreshed, oldPurchase, replacementMode)
+                            launchWithCurrentOffer(currentActivity, id, refreshed, oldPurchase, replacementMode, requireTimeExtensionCandidate)
                         } else {
                             // Reconfirm changed terms before checkout.
                             AlertDialog.Builder(currentActivity)
@@ -1227,7 +1298,7 @@ internal class GoogleOneBillingSession(activity: Activity) {
                                 )
                                 .setNegativeButton(text(currentActivity, R.string.googleone_cancel), null)
                                 .setPositiveButton(text(currentActivity, R.string.googleone_open_checkout)) { _, _ ->
-                                    launchOfficialBilling(currentActivity, id, refreshed, oldPurchase, replacementMode)
+                                    launchOfficialBilling(currentActivity, id, refreshed, oldPurchase, replacementMode, requireTimeExtensionCandidate)
                                 }
                                 .show()
                         }
@@ -1246,24 +1317,33 @@ internal class GoogleOneBillingSession(activity: Activity) {
         offer: AvailableOffer,
         oldPurchase: Purchase?,
         replacementMode: Int,
+        requireTimeExtensionCandidate: Boolean,
     ) {
         if (!isCurrent(id) || activity.isFinishing || activity.isDestroyed) return
         if (oldPurchase == null) {
-            launchWithCurrentTerms(activity, id, offer, null, replacementMode)
+            if (requireTimeExtensionCandidate) {
+                failure(id, R.string.googleone_subscription_changed)
+                return
+            }
+            launchWithCurrentTerms(activity, id, offer, null, replacementMode, false)
             return
         }
         // Recheck the old purchase after refreshing pricing.
         val billing = client ?: return
         fetchPurchases(billing, id) { purchases ->
             val current = purchases.firstOrNull {
-                GoogleOneReplacementPolicy.isSameActiveSubscription(oldPurchase, it)
+                GoogleOneReplacementPolicy.isSameActiveSubscription(oldPurchase, it) &&
+                    (
+                        !requireTimeExtensionCandidate ||
+                            GoogleOneReplacementPolicy.isTimeExtensionCandidate(it, offer.product.productId)
+                        )
             }
             if (current == null) {
                 failure(id, R.string.googleone_subscription_changed)
                 return@fetchPurchases
             }
             onActivity(id) {
-                launchWithCurrentTerms(it, id, offer, current, replacementMode)
+                launchWithCurrentTerms(it, id, offer, current, replacementMode, requireTimeExtensionCandidate)
             }
         }
     }
@@ -1274,9 +1354,20 @@ internal class GoogleOneBillingSession(activity: Activity) {
         offer: AvailableOffer,
         oldPurchase: Purchase?,
         replacementMode: Int,
+        requireTimeExtensionCandidate: Boolean,
     ) {
         if (!isCurrent(id) || activity.isFinishing || activity.isDestroyed) return
         val billing = client ?: return
+        if (requireTimeExtensionCandidate &&
+            (
+                oldPurchase == null ||
+                    replacementMode != BillingFlowParams.ProrationMode.IMMEDIATE_AND_CHARGE_FULL_PRICE ||
+                    !GoogleOneReplacementPolicy.isTimeExtensionCandidate(oldPurchase, offer.product.productId)
+                )
+        ) {
+            failure(id, R.string.googleone_subscription_changed)
+            return
+        }
         try {
             val entry = BillingFlowParams.ProductDetailsParams.newBuilder()
                 .setProductDetails(offer.product)

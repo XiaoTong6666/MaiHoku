@@ -95,6 +95,11 @@
     <string name="googleone_replace_subscription">替换现有订阅…</string>
     <string name="googleone_subscription_actions">更多订阅操作…</string>
     <string name="googleone_resubscribe">恢复 / 重新订阅（同一 SKU）</string>
+    <string name="googleone_try_extend_subscription">尝试叠加订阅时长</string>
+    <string name="googleone_time_extension_unavailable">没有找到 %1$s 对应的有效且仍在自动续订的订阅。\n\n这个入口只尝试同一 SKU 的时间叠加，其他套餐请使用「替换现有订阅」，也可以前往 Play 核对当前订阅。</string>
+    <string name="googleone_time_extension_choose">选择需要尝试叠加的订阅</string>
+    <string name="googleone_time_extension_confirm_title">确认尝试叠加订阅时长</string>
+    <string name="googleone_time_extension_confirm">当前订阅：%1$s\n目标商品：%2$s\n目标优惠：%3$s\n替换模式：CHARGE_FULL_PRICE（5）\n\n计费阶段：\n%4$s\n\n此操作会尝试立即替换订阅，可能产生扣费或改变续费日期，不保证免费试用时长能叠加。\n\n请先记下 Play 中原来的下次付款日期，在官方结算页确认账号、金额和条款，完成后再到 Play 对比日期，是否继续？</string>
     <string name="googleone_resubscribe_unavailable">未找到 %1$s 的已取消订阅，请核对 SKU 或前往 Play 查看。</string>
     <string name="googleone_resubscribe_confirm_title">确认尝试恢复订阅</string>
     <string name="googleone_resubscribe_confirm">商品：%1$s\n\n计费阶段：\n%2$s\n\n恢复后可能重新续订或扣费，不保证新试用。请在 Play 核对账号和价格，是否继续？</string>
