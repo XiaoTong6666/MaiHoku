@@ -8,10 +8,13 @@ class DexKitSession(
     private val module: XposedModule,
     private val apkPath: String,
 ) {
-    fun <T> useBridge(block: (DexKitBridge) -> T): T {
+    fun <T> useBridge(block: (DexKitBridge) -> T): T = useBridgeForPath(apkPath, block)
+
+    /** Also accepts a DEX-bearing Wi-Fi APEX jar loaded by system_server. */
+    fun <T> useBridgeForPath(path: String, block: (DexKitBridge) -> T): T {
         ensureLoaded()
-        val bridge = checkNotNull(DexKitBridge.create(apkPath)) {
-            "Unable to create DexKit bridge for $apkPath"
+        val bridge = checkNotNull(DexKitBridge.create(path)) {
+            "Unable to create DexKit bridge for $path"
         }
         return bridge.use(block)
     }

@@ -6,6 +6,7 @@ MaiHoku 是一个基于 libxposed API 102 的 Android Xposed 模块，目前包�
 - **Termux**：双击终端左侧边缘打开侧边栏。
 - **Google Messages / AOSP Messaging**：在原生设置页注入「小米网络短信」入口，支持 SIM 激活、账号验证、联系人在线状态和网络短信收发。Push 前台服务负责连接恢复、消息持久化和回执；宿主适配器复用短信 App 的原生收件、会话和发送状态流程。当前 Push 连接仅支持 SIM 1，不同宿主版本仍需分别验证兼容性。
 - **Google One**：查询 Google AI Ultra、Pro 等订阅优惠，查看免费期和续费价格，支持打开 Google Play 官方结算页。
+- **Wi-Fi 高级连接**：在 Android Settings 原生 Wi-Fi 连接/修改对话框中选择 WPA2-PSK、WPA3-SAE、WPA2/WPA3 过渡、Open/OWE，并配置 PMF、BSSID、SAE H2E。原生高级选项中的隐藏 SSID、MAC 随机化、IP/DNS、代理和密码及连接/保存流程不变。
 - **Telegram**：
   - 自定义 MTProto API identity。
   - 登录 / SMS 兼容处理。
@@ -25,6 +26,8 @@ com.android.phone
 org.telegram.messenger
 org.telegram.messenger.web
 com.google.android.apps.subscriptions.red
+com.android.settings
+system
 ```
 
 ## 源码结构
@@ -40,6 +43,13 @@ features/
   termux/                 # 双击打开侧边栏
   screenrecorder/         # MIUI 高帧率录屏
   googleone/              # Google One 优惠查询和结算入口
+  wifi/                   # Settings 原生 Wi-Fi 高级连接
+    core/                 # 原生配置读取与显式字段修改
+    policy/               # 安全策略、身份与提交验证
+    service/              # system_server 生命周期及 Wi-Fi APEX Hook
+    host/common/          # Settings 通用入口、符号、控件和提交保护
+    host/aosp/            # AOSP / LineageOS 原生界面
+    host/miui/            # MIUI / HyperOS 原生界面与 MIUIX 动画
   mimessage/
     core/                 # 核心服务和运行状态
     account/              # SIM 身份、激活、Passport、Mixin
@@ -94,6 +104,15 @@ Telegram 功能通过 libxposed remote preferences 读取配置：
 | `forward.source_free_enabled` | `true` | 无来源转发 |
 
 无来源转发复用 Telegram 原有转发流程，仅切换 `forwardFromMyName`，不会绕过禁止转发或内容保护限制。
+
+## Wi-Fi 高级连接
+
+在 Xposed 管理器勾选 `com.android.settings` 和 `system`，重启设备。在系统 Wi-Fi 连接、添加或修改网络界面展开「MaiHoku · Wi-Fi 高级连接」。支持 AOSP / LineageOS 的原生布局和 MIUI / HyperOS 的 MIUIX 控件，未识别到兼容界面时不注入。
+
+- **配置**：选择系统默认、WPA2-PSK、WPA3-SAE、WPA2/WPA3 过渡、开放或 OWE，以及 PMF、BSSID、SAE H2E-only。密码沿用系统输入框，必要时提供补充输入框。仅覆盖显式修改的字段，不改变原生 IP/DNS、代理、隐藏网络、MAC 随机化或计费设置。
+- **保存与策略**：使用原生 WifiManager 保存/连接接口；保存后按完整网络身份验证安全类型及明确修改的 PMF、H2E、BSSID。仅验证成功后提交策略，失败时提示。策略使用版本化身份哈希，不保存密码、不依赖跨重启的 networkId。设置进程内按请求代次丢弃过期回调；临时策略限定当前启动且有效期为 20 秒。成功修改身份或忘记网络后，清理不再使用的旧策略键。
+- **自动升级**：`system` 作用域按已验证签名或 DexKit 指纹识别 Wi-Fi APEX 服务，针对单个 WPA2/Open 网络抑制自动 SAE/OWE 升级，不全局关闭 WPA3。仅勾选 Settings 不保证长期锁定。对于已有 PSK/SAE 配置，部分 ROM 会保留合并后的旧安全类型；保存成功不等于切换成功，MaiHoku 会验证实际配置而不直接修改 WifiConfigStore。
+- **兼容性**：实际支持情况取决于 ROM、无线驱动及接入点，配置保存成功不代表连接成功。
 
 ## 构建
 

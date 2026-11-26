@@ -19,18 +19,21 @@ internal object ModuleResources {
         cached = null
     }
 
-    fun text(context: Context, id: Int, vararg arguments: Any): String {
-        if (context.packageName == BuildConfig.APPLICATION_ID) return context.getString(id, *arguments)
+    fun text(context: Context, id: Int, vararg arguments: Any): String = forContext(context).getString(id, *arguments)
+
+    fun stringArray(context: Context, id: Int): Array<String> = forContext(context).getStringArray(id)
+
+    private fun forContext(context: Context): Resources {
+        if (context.packageName == BuildConfig.APPLICATION_ID) return context.resources
         val configuration = context.resources.configuration
         val moduleInfo = checkNotNull(moduleApplicationInfo) { "MaiHoku module resources were not initialized" }
         // ApplicationInfo avoids module-package visibility restrictions in the host process.
-        val resources = cached?.takeIf { it.configuration == configuration } ?: context.packageManager
+        return cached?.takeIf { it.configuration == configuration } ?: context.packageManager
             .getResourcesForApplication(moduleInfo)
             .also {
                 @Suppress("DEPRECATION")
                 it.updateConfiguration(configuration, context.resources.displayMetrics)
                 cached = it
             }
-        return resources.getString(id, *arguments)
     }
 }

@@ -8,4 +8,54 @@
     <string name="telegram_forward">Forward</string>
     <string name="telegram_forward_without_sender">Forward without sender</string>
     <string name="telegram_back">Back</string>
+    <!-- System Wi-Fi advanced connection -->
+    <string name="wifi_advanced_heading">MaiHoku · Advanced Wi-Fi</string>
+        <string name="wifi_security_not_applied">System did not apply all selected advanced Wi-Fi options. Check the network configuration.</string>
+<string name="wifi_advanced_invalid">Invalid advanced Wi-Fi settings</string>
+    <string name="wifi_security_mode">Security</string>
+    <string name="wifi_pmf">PMF</string>
+    <string name="wifi_bssid">BSSID</string>
+    <string name="wifi_bssid_hint">BSSID, * to clear</string>
+    <string name="wifi_bssid_invalid">Enter a valid unicast BSSID</string>
+    <string name="wifi_sae_h2e_only">SAE H2E negotiation</string>
+    <string name="wifi_password_label">Password</string>
+    <string name="wifi_password_hint">Optional password</string>
+    <string name="wifi_password_invalid">Use 8–63 characters (or 64 hex digits for WPA2)</string>
+    <string-array name="wifi_security_modes">
+        <item>Use system settings</item>
+        <item>WPA2-PSK only</item>
+        <item>WPA3-SAE only</item>
+        <item>WPA2/WPA3 mixed</item>
+        <item>Open</item>
+        <item>Enhanced Open (OWE)</item>
+    </string-array>
+    <string-array name="wifi_pmf_modes">
+        <item>Keep current</item>
+        <item>Force required</item>
+        <item>Not required</item>
+    </string-array>
+    <string name="wifi_keep_system_security">Use system settings</string>
+    <string name="wifi_keep_system_security_value">Use system settings: %1$s</string>
+    <string name="wifi_keep_pmf_required">Keep current: required</string>
+    <string name="wifi_keep_pmf_optional">Keep current: not required</string>
+    <string name="wifi_keep_system_pmf">System default</string>
+    <string name="wifi_keep_h2e_enabled">Keep current: on</string>
+    <string name="wifi_keep_h2e_disabled">Keep current: off</string>
+    <string name="wifi_keep_system_h2e">System default</string>
+    <string name="wifi_bssid_current">Current: %1$s (leave blank to keep)</string>
+    <string name="wifi_advanced_help">Only changed fields are applied. PMF protects Wi-Fi management frames and is required for WPA3. A BSSID pins a particular access point.</string>
+    <string-array name="wifi_h2e_modes">
+        <item>Keep current</item>
+        <item>Require H2E only</item>
+        <item>Disable H2E-only restriction</item>
+    </string-array>
+    <string name="wifi_security_type_psk_sae">WPA2/WPA3</string>
+    <string name="wifi_security_type_sae">WPA3-SAE</string>
+    <string name="wifi_security_type_psk">WPA2-PSK</string>
+    <string name="wifi_security_type_open_owe">Open/OWE</string>
+    <string name="wifi_security_type_owe">OWE</string>
+    <string name="wifi_security_type_open">Open</string>
+    <string name="wifi_security_type_wpa3_enterprise">WPA3-Enterprise</string>
+    <string name="wifi_security_type_wpa2_enterprise">WPA2-Enterprise</string>
+    <string name="wifi_security_type_wep">WEP</string>
 </resources>

@@ -7,4 +7,54 @@
     <string name="telegram_forward">转发</string>
     <string name="telegram_forward_without_sender">无来源转发</string>
     <string name="telegram_back">返回</string>
+    <!-- 系统 Wi-Fi 高级连接 -->
+    <string name="wifi_advanced_heading">MaiHoku · 高级连接</string>
+        <string name="wifi_security_not_applied">系统未应用全部所选 Wi-Fi 高级选项，请检查网络配置</string>
+<string name="wifi_advanced_invalid">高级 Wi-Fi 参数无效</string>
+    <string name="wifi_security_mode">安全模式</string>
+    <string name="wifi_pmf">PMF</string>
+    <string name="wifi_bssid">BSSID</string>
+    <string name="wifi_bssid_hint">输入 BSSID，* 为清除</string>
+    <string name="wifi_bssid_invalid">请输入有效的单播 BSSID</string>
+    <string name="wifi_sae_h2e_only">SAE H2E</string>
+    <string name="wifi_password_label">密码</string>
+    <string name="wifi_password_hint">选填</string>
+    <string name="wifi_password_invalid">密码需 8～63 位（WPA2 可使用 64 位十六进制）</string>
+    <string-array name="wifi_security_modes">
+        <item>系统默认值</item>
+        <item>仅 WPA2-PSK</item>
+        <item>仅 WPA3-SAE</item>
+        <item>WPA2/WPA3 混合</item>
+        <item>开放网络</item>
+        <item>增强开放 OWE</item>
+    </string-array>
+    <string-array name="wifi_pmf_modes">
+        <item>保持原值</item>
+        <item>强制启用</item>
+        <item>不强制</item>
+    </string-array>
+    <string name="wifi_keep_system_security">系统默认值</string>
+    <string name="wifi_keep_system_security_value">系统默认值：%1$s</string>
+    <string name="wifi_keep_pmf_required">保持原值：必需</string>
+    <string name="wifi_keep_pmf_optional">保持原值：不强制</string>
+    <string name="wifi_keep_system_pmf">系统默认值</string>
+    <string name="wifi_keep_h2e_enabled">保持原值：已启用</string>
+    <string name="wifi_keep_h2e_disabled">保持原值：未启用</string>
+    <string name="wifi_keep_system_h2e">系统默认值</string>
+    <string name="wifi_bssid_current">当前：%1$s（留空不修改）</string>
+    <string name="wifi_advanced_help">仅应用已修改的选项。PMF（802.11w）用于管理帧保护；BSSID 可锁定接入点。</string>
+    <string-array name="wifi_h2e_modes">
+        <item>保持原值</item>
+        <item>仅使用 H2E</item>
+        <item>取消 H2E 限制</item>
+    </string-array>
+    <string name="wifi_security_type_psk_sae">WPA2/WPA3</string>
+    <string name="wifi_security_type_sae">WPA3-SAE</string>
+    <string name="wifi_security_type_psk">WPA2-PSK</string>
+    <string name="wifi_security_type_open_owe">开放/增强开放 OWE</string>
+    <string name="wifi_security_type_owe">OWE</string>
+    <string name="wifi_security_type_open">开放网络</string>
+    <string name="wifi_security_type_wpa3_enterprise">WPA3-企业级</string>
+    <string name="wifi_security_type_wpa2_enterprise">WPA2-企业级</string>
+    <string name="wifi_security_type_wep">WEP</string>
 </resources>
